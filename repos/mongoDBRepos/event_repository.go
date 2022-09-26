@@ -2,11 +2,19 @@ package mongoDBRepos
 
 import (
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"ticken-validator-service/models"
 )
 
 const EventCollectionName = "events"
+
+type eventDbModel struct {
+	mongoID      primitive.ObjectID `bson:"_id"`
+	EventID      string             `bson:"event_id"`
+	OrganizerID  string             `bson:"organizer_id"`
+	PvtBCChannel string             `bson:"pvt_bc_channel"`
+}
 
 type EventMongoDBRepository struct {
 	baseRepository

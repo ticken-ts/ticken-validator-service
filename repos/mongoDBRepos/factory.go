@@ -21,7 +21,3 @@ func NewFactory(db infra.Db, tf *utils.TickenConfig) *Factory {
 func (factory *Factory) BuildEventRepository() any {
 	return NewEventRepository(factory.dbClient, factory.dbName)
 }
-
-func (factory *Factory) BuildTicketRepository() any {
-	return NewTicketRepository(factory.dbClient, factory.dbName)
-}

@@ -2,35 +2,35 @@ package services
 
 import (
 	"fmt"
-	"ticken-validator-service/blockchain/pvtbc"
-	"ticken-validator-service/models"
+	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
+	chain_models "github.com/ticken-ts/ticken-pvtbc-connector/chain-models"
 	"ticken-validator-service/repos"
 )
 
 type ticketScanner struct {
-	pvtbcConnector  pvtbc.TickenConnector
+	pvtbcCaller     *pvtbc.Caller
 	eventRepository repos.EventRepository
 }
 
-func NewTicketScanner(eventRepository repos.EventRepository, pvtbcConnector pvtbc.TickenConnector) TicketScanner {
+func NewTicketScanner(eventRepository repos.EventRepository, pvtbcCaller *pvtbc.Caller) TicketScanner {
 	return &ticketScanner{
-		pvtbcConnector:  pvtbcConnector,
+		pvtbcCaller:     pvtbcCaller,
 		eventRepository: eventRepository,
 	}
 }
 
-func (s *ticketScanner) Scan(eventID string, ticketID string, owner string) (*models.Ticket, error) {
+func (s *ticketScanner) Scan(eventID string, ticketID string, owner string) (*chain_models.Ticket, error) {
 	event := s.eventRepository.FindEvent(eventID)
 	if event == nil {
 		return nil, fmt.Errorf("could not determine organizer channel")
 	}
 
-	err := s.pvtbcConnector.Connect(event.PvtBCChannel)
+	err := s.pvtbcCaller.SetChannel(event.PvtBCChannel)
 	if err != nil {
 		return nil, err
 	}
 
-	ticketResponse, err := s.pvtbcConnector.ScanTicket(
+	ticket, err := s.pvtbcCaller.ScanTicket(
 		ticketID,
 		eventID,
 		owner,
@@ -39,11 +39,6 @@ func (s *ticketScanner) Scan(eventID string, ticketID string, owner string) (*mo
 	if err != nil {
 		return nil, err
 	}
-
-	ticket := new(models.Ticket)
-	ticket.EventID = eventID
-	ticket.TicketID = ticketID
-	ticket.Status = ticketResponse.Status
 
 	return ticket, nil
 }

@@ -1,7 +1,7 @@
 package services
 
 import (
-	"ticken-validator-service/blockchain/pvtbc"
+	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
 	"ticken-validator-service/infra"
 	"ticken-validator-service/repos"
 	"ticken-validator-service/utils"
@@ -9,6 +9,7 @@ import (
 
 type provider struct {
 	TicketScanner TicketScanner
+	EventManager  EventManager
 }
 
 func NewProvider(db infra.Db, tickenConfig *utils.TickenConfig) (Provider, error) {
@@ -19,19 +20,31 @@ func NewProvider(db infra.Db, tickenConfig *utils.TickenConfig) (Provider, error
 		return nil, err
 	}
 
-	pvtbcTickenConnector, err := pvtbc.NewConnector()
+	pvtbcConfig := tickenConfig.Config.Pvtbc
+
+	pvtbcCaller, err := pvtbc.NewCaller(
+		pvtbcConfig.MspID,
+		pvtbcConfig.CertificatePath,
+		pvtbcConfig.PrivateKeyPath,
+		pvtbcConfig.PeerEndpoint,
+		pvtbcConfig.GatewayPeer,
+		pvtbcConfig.TLSCertificatePath,
+	)
+
 	if err != nil {
 		return nil, err
 	}
 
-	provider.TicketScanner = NewTicketScanner(
-		repoProvider.GetEventRepository(),
-		pvtbcTickenConnector,
-	)
+	provider.TicketScanner = NewTicketScanner(repoProvider.GetEventRepository(), pvtbcCaller)
+	provider.EventManager = NewEventManager(repoProvider.GetEventRepository())
 
 	return provider, nil
 }
 
 func (provider *provider) GetTicketScanner() TicketScanner {
 	return provider.TicketScanner
+}
+
+func (provider *provider) GetEventManager() EventManager {
+	return provider.EventManager
 }

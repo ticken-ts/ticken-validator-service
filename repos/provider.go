@@ -8,9 +8,8 @@ import (
 )
 
 type provider struct {
-	reposFactory     Factory
-	eventRepository  EventRepository
-	ticketRepository TicketRepository
+	reposFactory    Factory
+	eventRepository EventRepository
 }
 
 func NewProvider(db infra.Db, tickenConfig *utils.TickenConfig) (Provider, error) {
@@ -32,11 +31,4 @@ func (provider *provider) GetEventRepository() EventRepository {
 		provider.eventRepository = provider.reposFactory.BuildEventRepository().(EventRepository)
 	}
 	return provider.eventRepository
-}
-
-func (provider *provider) GetTicketRepository() TicketRepository {
-	if provider.ticketRepository == nil {
-		provider.ticketRepository = provider.reposFactory.BuildTicketRepository().(TicketRepository)
-	}
-	return provider.ticketRepository
 }

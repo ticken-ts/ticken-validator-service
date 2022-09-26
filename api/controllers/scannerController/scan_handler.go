@@ -3,6 +3,7 @@ package scannerController
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"ticken-validator-service/api/mappers"
 	"ticken-validator-service/utils"
 )
 
@@ -11,12 +12,14 @@ func (controller *ScannerController) Scan(c *gin.Context) {
 
 	ticketScanner := controller.serviceProvider.GetTicketScanner()
 
-	newTicket, err := ticketScanner.Scan(eventID, ticketID, owner)
+	ticketScanned, err := ticketScanner.Scan(eventID, ticketID, owner)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.HttpResponse{Message: err.Error()})
 		c.Abort()
 		return
 	}
 
-	c.JSON(http.StatusOK, utils.HttpResponse{Data: newTicket})
+	ticketScannedDto := mappers.MapChainTicketToDTO(ticketScanned)
+
+	c.JSON(http.StatusOK, utils.HttpResponse{Data: ticketScannedDto})
 }
