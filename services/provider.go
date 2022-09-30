@@ -35,7 +35,7 @@ func NewProvider(db infra.Db, tickenConfig *utils.TickenConfig) (Provider, error
 		return nil, err
 	}
 
-	provider.TicketScanner = NewTicketScanner(repoProvider.GetEventRepository(), pvtbcCaller)
+	provider.TicketScanner = NewTicketScanner(repoProvider.GetEventRepository(), repoProvider.GetTicketRepository(), pvtbcCaller)
 	provider.EventManager = NewEventManager(repoProvider.GetEventRepository())
 
 	return provider, nil

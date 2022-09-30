@@ -1,7 +1,6 @@
 package services
 
 import (
-	chain_models "github.com/ticken-ts/ticken-pvtbc-connector/chain-models"
 	"ticken-validator-service/models"
 )
 
@@ -11,7 +10,7 @@ type Provider interface {
 }
 
 type TicketScanner interface {
-	Scan(eventID string, ticketID string, owner string) (*chain_models.Ticket, error)
+	Scan(eventID string, ticketID string, owner string) (*models.Ticket, error)
 }
 
 type EventManager interface {

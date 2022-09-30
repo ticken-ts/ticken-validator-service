@@ -19,7 +19,7 @@ func (controller *ScannerController) Scan(c *gin.Context) {
 		return
 	}
 
-	ticketScannedDto := mappers.MapChainTicketToDTO(ticketScanned)
+	ticketDTO := mappers.MapTicketToDTO(ticketScanned)
 
-	c.JSON(http.StatusOK, utils.HttpResponse{Data: ticketScannedDto})
+	c.JSON(http.StatusOK, utils.HttpResponse{Data: ticketDTO})
 }
