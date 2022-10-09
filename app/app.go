@@ -14,12 +14,16 @@ type TickenValidatorApp struct {
 	serviceProvider services.Provider
 }
 
-func New(router infra.Router, db infra.Db, tickenConfig *utils.TickenConfig) *TickenValidatorApp {
+func New(builder *infra.Builder, tickenConfig *utils.TickenConfig) *TickenValidatorApp {
 	ticketValidatorApp := new(TickenValidatorApp)
+
+	db := builder.BuildDb()
+	router := builder.BuildRouter()
+	pvtbcCaller := builder.BuildPvtbcCaller()
 
 	// this provider is going to provide all services
 	// needed by the controllers to execute it operations
-	serviceProvider, _ := services.NewProvider(db, tickenConfig)
+	serviceProvider, _ := services.NewProvider(db, pvtbcCaller, tickenConfig)
 
 	ticketValidatorApp.router = router
 	ticketValidatorApp.serviceProvider = serviceProvider
