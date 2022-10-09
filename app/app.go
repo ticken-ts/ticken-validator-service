@@ -3,6 +3,7 @@ package app
 import (
 	"ticken-validator-service/api"
 	"ticken-validator-service/api/controllers/scannerController"
+	"ticken-validator-service/api/middlewares"
 	"ticken-validator-service/infra"
 	"ticken-validator-service/services"
 	"ticken-validator-service/utils"
@@ -22,6 +23,14 @@ func New(router infra.Router, db infra.Db, tickenConfig *utils.TickenConfig) *Ti
 
 	ticketValidatorApp.router = router
 	ticketValidatorApp.serviceProvider = serviceProvider
+
+	var appMiddlewares = []api.Middleware{
+		middlewares.NewAuthMiddleware(serviceProvider),
+	}
+
+	for _, middleware := range appMiddlewares {
+		middleware.Setup(router)
+	}
 
 	var controllers = []api.Controller{
 		scannerController.New(serviceProvider),
