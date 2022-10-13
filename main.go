@@ -17,10 +17,7 @@ func main() {
 		panic(err)
 	}
 
-	db := builder.BuildDb()
-	router := builder.BuildRouter()
-
-	ticketValidatorService := app.New(router, db, tickenConfig)
+	ticketValidatorService := app.New(builder, tickenConfig)
 	if tickenConfig.IsDev() {
 		ticketValidatorService.Populate()
 	}
