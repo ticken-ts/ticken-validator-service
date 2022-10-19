@@ -23,10 +23,11 @@ func main() {
 		panic(err)
 	}
 
-	ticketValidatorService := app.New(builder, tickenConfig)
+	tickenValidatorService := app.New(builder, tickenConfig)
 	if tickenEnv.IsDev() {
-		ticketValidatorService.Populate()
+		tickenValidatorService.Populate()
+		tickenValidatorService.EmitFakeJWT()
 	}
 
-	ticketValidatorService.Start()
+	tickenValidatorService.Start()
 }

@@ -3,7 +3,6 @@ package scannerController
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/google/uuid"
 	"ticken-validator-service/services"
 )
 
@@ -11,9 +10,6 @@ type ScannerController struct {
 	jsonValidator   *validator.Validate
 	serviceProvider services.IProvider
 }
-
-// TODO -> test only until user management is complete
-var owner = uuid.New().String()
 
 func New(serviceProvider services.IProvider) *ScannerController {
 	controller := new(ScannerController)

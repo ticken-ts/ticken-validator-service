@@ -1,7 +1,9 @@
 package app
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 	"ticken-validator-service/api"
 	"ticken-validator-service/api/controllers/scannerController"
 	"ticken-validator-service/api/middlewares"
@@ -45,18 +47,18 @@ func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorAp
 	ticketValidatorApp.serviceProvider = serviceProvider
 
 	var appMiddlewares = []api.Middleware{
-		middlewares.NewAuthMiddleware(serviceProvider),
+		middlewares.NewAuthMiddleware(serviceProvider, &tickenConfig.Server),
 	}
 
 	for _, middleware := range appMiddlewares {
 		middleware.Setup(engine)
 	}
 
-	var controllers = []api.Controller{
+	var appControllers = []api.Controller{
 		scannerController.New(serviceProvider),
 	}
 
-	for _, controller := range controllers {
+	for _, controller := range appControllers {
 		controller.Setup(engine)
 	}
 
@@ -72,4 +74,18 @@ func (tickenValidatorApp *TickenValidatorApp) Start() {
 }
 
 func (tickenValidatorApp *TickenValidatorApp) Populate() {
+}
+
+func (tickenValidatorApp *TickenValidatorApp) EmitFakeJWT() {
+	fakeJWT := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
+		"sub":   "290c641a-55a1-40f5-acc3-d4ebe3626fdd",
+		"email": "user@ticken.com",
+	})
+
+	signedJWT, err := fakeJWT.SigningString()
+	if err != nil {
+		panic(fmt.Errorf("error generation fake JWT: %s", err.Error()))
+	}
+
+	fmt.Printf("DEV JWT: %s \n", signedJWT)
 }

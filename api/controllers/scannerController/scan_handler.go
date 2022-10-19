@@ -1,6 +1,7 @@
 package scannerController
 
 import (
+	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"ticken-validator-service/api/mappers"
@@ -9,6 +10,7 @@ import (
 
 func (controller *ScannerController) Scan(c *gin.Context) {
 	eventID, ticketID := c.Param("eventID"), c.Param("ticketID")
+	owner := c.MustGet("jwt").(*oidc.IDToken).Subject
 
 	ticketScanner := controller.serviceProvider.GetTicketScanner()
 
