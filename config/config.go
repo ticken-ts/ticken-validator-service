@@ -2,19 +2,25 @@ package config
 
 import "github.com/spf13/viper"
 
+const DefaultConfigFilename = "config"
+const ConfigFileExtension = "json"
+
 type Config struct {
 	Database DatabaseConfig `mapstructure:"database"`
 	Pvtbc    PvtbcConfig    `mapstructure:"pvtbc"`
 	Server   ServerConfig   `mapstructure:"server"`
 }
 
-func Load(path string) (*Config, error) {
+func Load(path string, filename string) (*Config, error) {
 	config := new(Config)
 
-	viper.AddConfigPath(path)
+	if len(filename) == 0 {
+		filename = DefaultConfigFilename
+	}
 
-	viper.SetConfigName("config")
-	viper.SetConfigType("json")
+	viper.AddConfigPath(path)
+	viper.SetConfigName(filename)
+	viper.SetConfigType(ConfigFileExtension)
 
 	err := viper.ReadInConfig()
 	if err != nil {
