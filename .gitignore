@@ -11,5 +11,14 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# os and ide files
+.idea/
+.DS_Store
+tmp/build-errors.log
+
+# config
+config.json
+
+# secrets
+.netrc
+.env
