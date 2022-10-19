@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 	"ticken-validator-service/api"
+	"ticken-validator-service/api/controllers/healthController"
 	"ticken-validator-service/api/controllers/scannerController"
 	"ticken-validator-service/api/middlewares"
 	"ticken-validator-service/config"
@@ -55,6 +56,7 @@ func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorAp
 	}
 
 	var appControllers = []api.Controller{
+		healthController.New(serviceProvider),
 		scannerController.New(serviceProvider),
 	}
 
