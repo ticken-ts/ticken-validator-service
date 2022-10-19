@@ -12,12 +12,12 @@ type TicketRepository interface {
 	FindTicket(eventID string, ticketID string) *models.Ticket
 }
 
-type Provider interface {
+type IProvider interface {
 	GetEventRepository() EventRepository
 	GetTicketRepository() TicketRepository
 }
 
-type Factory interface {
+type IFactory interface {
 	BuildEventRepository() any
 	BuildTicketRepository() any
 }

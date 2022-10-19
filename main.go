@@ -2,12 +2,18 @@ package main
 
 import (
 	"ticken-validator-service/app"
+	"ticken-validator-service/config"
+	"ticken-validator-service/env"
 	"ticken-validator-service/infra"
-	"ticken-validator-service/utils"
 )
 
 func main() {
-	tickenConfig, err := utils.LoadConfig(".")
+	tickenEnv, err := env.Load()
+	if err != nil {
+		panic(err)
+	}
+
+	tickenConfig, err := config.Load(".")
 	if err != nil {
 		panic(err)
 	}
@@ -18,7 +24,7 @@ func main() {
 	}
 
 	ticketValidatorService := app.New(builder, tickenConfig)
-	if tickenConfig.IsDev() {
+	if tickenEnv.IsDev() {
 		ticketValidatorService.Populate()
 	}
 

@@ -1,31 +1,47 @@
 package app
 
 import (
+	"github.com/gin-gonic/gin"
 	"ticken-validator-service/api"
 	"ticken-validator-service/api/controllers/scannerController"
 	"ticken-validator-service/api/middlewares"
+	"ticken-validator-service/config"
+	"ticken-validator-service/env"
 	"ticken-validator-service/infra"
+	"ticken-validator-service/repos"
 	"ticken-validator-service/services"
-	"ticken-validator-service/utils"
 )
 
 type TickenValidatorApp struct {
-	router          infra.Router
-	serviceProvider services.Provider
+	engine          *gin.Engine
+	config          *config.Config
+	repoProvider    repos.IProvider
+	serviceProvider services.IProvider
 }
 
-func New(builder *infra.Builder, tickenConfig *utils.TickenConfig) *TickenValidatorApp {
+func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorApp {
 	ticketValidatorApp := new(TickenValidatorApp)
 
-	db := builder.BuildDb()
-	router := builder.BuildRouter()
+	engine := builder.BuildEngine()
 	pvtbcCaller := builder.BuildPvtbcCaller()
+	db := builder.BuildDb(env.TickenEnv.ConnString)
+
+	// this provider is going to provider all repositories
+	// to the services
+	repoProvider, err := repos.NewProvider(db, &tickenConfig.Database)
+	if err != nil {
+		panic(err)
+	}
 
 	// this provider is going to provide all services
 	// needed by the controllers to execute it operations
-	serviceProvider, _ := services.NewProvider(db, pvtbcCaller, tickenConfig)
+	serviceProvider, err := services.NewProvider(repoProvider, pvtbcCaller)
+	if err != nil {
+		panic(err)
+	}
 
-	ticketValidatorApp.router = router
+	ticketValidatorApp.engine = engine
+	ticketValidatorApp.repoProvider = repoProvider
 	ticketValidatorApp.serviceProvider = serviceProvider
 
 	var appMiddlewares = []api.Middleware{
@@ -33,7 +49,7 @@ func New(builder *infra.Builder, tickenConfig *utils.TickenConfig) *TickenValida
 	}
 
 	for _, middleware := range appMiddlewares {
-		middleware.Setup(router)
+		middleware.Setup(engine)
 	}
 
 	var controllers = []api.Controller{
@@ -41,18 +57,19 @@ func New(builder *infra.Builder, tickenConfig *utils.TickenConfig) *TickenValida
 	}
 
 	for _, controller := range controllers {
-		controller.Setup(router)
+		controller.Setup(engine)
 	}
 
 	return ticketValidatorApp
 }
 
-func (tickenTicketApp *TickenValidatorApp) Start() {
-	err := tickenTicketApp.router.Run("localhost:8080")
+func (tickenValidatorApp *TickenValidatorApp) Start() {
+	url := tickenValidatorApp.config.Server.GetServerURL()
+	err := tickenValidatorApp.engine.Run(url)
 	if err != nil {
 		panic(err)
 	}
 }
 
-func (tickenTicketApp *TickenValidatorApp) Populate() {
+func (tickenValidatorApp *TickenValidatorApp) Populate() {
 }

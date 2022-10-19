@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"net/http"
-	"ticken-validator-service/infra"
 	"ticken-validator-service/services"
 	"ticken-validator-service/utils"
 	"time"
@@ -18,12 +17,12 @@ var IdentityIssuer = "http://localhost:8080/realms/organizers"
 
 type AuthMiddleware struct {
 	validator       *validator.Validate
-	serviceProvider services.Provider
+	serviceProvider services.IProvider
 	oidcClientCtx   context.Context
 	oidcProvider    *oidc.Provider
 }
 
-func NewAuthMiddleware(serviceProvider services.Provider) *AuthMiddleware {
+func NewAuthMiddleware(serviceProvider services.IProvider) *AuthMiddleware {
 	middleware := new(AuthMiddleware)
 	middleware.validator = validator.New()
 	middleware.serviceProvider = serviceProvider
@@ -55,7 +54,7 @@ func initOIDCProvider(oidcClientCtx context.Context, issuer string) *oidc.Provid
 	return provider
 }
 
-func (middleware *AuthMiddleware) Setup(router infra.Router) {
+func (middleware *AuthMiddleware) Setup(router gin.IRouter) {
 	router.Use(middleware.isJWTAuthorized())
 }
 

@@ -4,7 +4,7 @@ import (
 	"ticken-validator-service/models"
 )
 
-type Provider interface {
+type IProvider interface {
 	GetTicketScanner() TicketScanner
 	GetEventManager() EventManager
 }
