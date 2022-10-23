@@ -44,6 +44,7 @@ func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorAp
 	}
 
 	ticketValidatorApp.engine = engine
+	ticketValidatorApp.config = tickenConfig
 	ticketValidatorApp.repoProvider = repoProvider
 	ticketValidatorApp.serviceProvider = serviceProvider
 
