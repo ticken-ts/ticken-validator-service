@@ -8,6 +8,7 @@ import (
 	"ticken-validator-service/api/controllers/healthController"
 	"ticken-validator-service/api/controllers/scannerController"
 	"ticken-validator-service/api/middlewares"
+	"ticken-validator-service/async"
 	"ticken-validator-service/config"
 	"ticken-validator-service/env"
 	"ticken-validator-service/infra"
@@ -20,6 +21,7 @@ type TickenValidatorApp struct {
 	config          *config.Config
 	repoProvider    repos.IProvider
 	serviceProvider services.IProvider
+	subscriber      *async.Subscriber
 }
 
 func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorApp {
@@ -27,7 +29,8 @@ func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorAp
 
 	engine := builder.BuildEngine()
 	pvtbcCaller := builder.BuildPvtbcCaller()
-	db := builder.BuildDb(env.TickenEnv.ConnString)
+	db := builder.BuildDb(env.TickenEnv.DbConnString)
+	busSubscriber := builder.BuildBusSubscriber(env.TickenEnv.BusConnString)
 
 	// this provider is going to provider all repositories
 	// to the services
@@ -43,8 +46,19 @@ func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorAp
 		panic(err)
 	}
 
+	subscriber, err := async.NewSubscriber(busSubscriber, repoProvider)
+	if err != nil {
+		panic(err)
+	}
+
+	err = subscriber.Start()
+	if err != nil {
+		panic(err)
+	}
+
 	ticketValidatorApp.engine = engine
 	ticketValidatorApp.config = tickenConfig
+	ticketValidatorApp.subscriber = subscriber
 	ticketValidatorApp.repoProvider = repoProvider
 	ticketValidatorApp.serviceProvider = serviceProvider
 

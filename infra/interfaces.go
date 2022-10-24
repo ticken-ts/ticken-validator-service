@@ -1,8 +1,10 @@
 package infra
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
+	"ticken-validator-service/infra/bus"
 )
 
 type Db interface {
@@ -16,9 +18,23 @@ type Db interface {
 	GetClient() interface{}
 }
 
+type BusSubscriber interface {
+	Connect(connString string, exchangeName string) error
+	IsConnected() bool
+	Listen(handler func([]byte)) error
+}
+
+type BusPublisher interface {
+	Connect(connString string, exchangeName string) error
+	IsConnected() bool
+	Publish(ctx context.Context, msg bus.Message) error
+}
+
 type IBuilder interface {
-	BuildDb(connString string) Db
 	BuildEngine() *gin.Engine
 	BuildPvtbcCaller() *pvtbc.Caller
 	BuildPvtbcListener() *pvtbc.Listener
+	BuildDb(connString string) Db
+	BuildBusPublisher(connString string) BusPublisher
+	BuildBusSubscriber(connString string) BusSubscriber
 }
