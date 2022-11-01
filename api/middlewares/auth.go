@@ -85,7 +85,7 @@ func isFreeURI(uri string) bool {
 
 func (middleware *AuthMiddleware) isJWTAuthorized() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if isFreeURI(c.FullPath()) {
+		if isFreeURI(c.Request.URL.Path) {
 			return
 		}
 
@@ -93,6 +93,11 @@ func (middleware *AuthMiddleware) isJWTAuthorized() gin.HandlerFunc {
 
 		oidcConfig := oidc.Config{
 			ClientID: middleware.clientID,
+
+			// in stage, if we are running with docker, the issues is emited
+			// with locahost:8080, but the url inside the docker network is keycloak:8080,
+			// TODO: solve this
+			SkipIssuerCheck: env.TickenEnv.IsStage(),
 		}
 
 		verifier := middleware.oidcProvider.Verifier(&oidcConfig)

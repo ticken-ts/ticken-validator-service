@@ -113,16 +113,8 @@ func (subscriber *RabbitMQSubscriber) ensureIsConnected() error {
 		return fmt.Errorf("RabbitMQ: connection is not stablished")
 	}
 
-	if subscriber.channel == nil {
-		return fmt.Errorf("RabbitMQ: channel is not set")
-	}
-
 	if subscriber.conn.IsClosed() {
 		return fmt.Errorf("RabbitMQ: connection is closed")
-	}
-
-	if subscriber.channel.IsClosed() {
-		return fmt.Errorf("RabbitMQ: channeld is closed")
 	}
 
 	return nil

@@ -5,6 +5,7 @@ import (
 	"ticken-validator-service/config"
 	"ticken-validator-service/env"
 	"ticken-validator-service/infra"
+	"ticken-validator-service/log"
 )
 
 func main() {
@@ -12,6 +13,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	log.InitGlobalLogger()
 
 	tickenConfig, err := config.Load(tickenEnv.ConfigFilePath, tickenEnv.ConfigFileName)
 	if err != nil {

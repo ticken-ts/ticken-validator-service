@@ -46,7 +46,7 @@ func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorAp
 		panic(err)
 	}
 
-	subscriber, err := async.NewSubscriber(busSubscriber, repoProvider)
+	subscriber, err := async.NewSubscriber(busSubscriber, serviceProvider)
 	if err != nil {
 		panic(err)
 	}

@@ -9,6 +9,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/joho/godotenv v1.4.0
 	github.com/rabbitmq/amqp091-go v1.5.0
+	github.com/rs/zerolog v1.28.0
 	github.com/spf13/viper v1.13.0
 	github.com/ticken-ts/ticken-pvtbc-connector v0.2.7
 	go.mongodb.org/mongo-driver v1.10.3
@@ -29,6 +30,7 @@ require (
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/miekg/pkcs11 v1.1.1 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

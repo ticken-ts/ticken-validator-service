@@ -6,8 +6,10 @@ import (
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
 	"github.com/ticken-ts/ticken-pvtbc-connector/fabric/peerconnector"
 	"ticken-validator-service/config"
+	"ticken-validator-service/env"
 	"ticken-validator-service/infra/bus"
 	"ticken-validator-service/infra/db"
+	"ticken-validator-service/log"
 )
 
 type Builder struct {
@@ -48,17 +50,28 @@ func (builder *Builder) BuildDb(connString string) Db {
 func (builder *Builder) BuildBusSubscriber(connString string) BusSubscriber {
 	var tickenBus BusSubscriber = nil
 
-	switch builder.tickenConfig.Bus.Driver {
+	driverToUse := builder.tickenConfig.Bus.Driver
+	if env.TickenEnv.IsDev() {
+		driverToUse = config.DevBusDriver
+	}
+
+	switch driverToUse {
+	case config.DevBusDriver:
+		log.TickenLogger.Info().Msg("using bus publisher: " + config.DevBusDriver)
+		tickenBus = bus.NewTickenDevBusSubscriber()
 	case config.RabbitMQDriver:
+		log.TickenLogger.Info().Msg("using bus subscriber: " + config.RabbitMQDriver)
 		tickenBus = bus.NewRabbitMQSubscriber()
 	default:
-		panic(fmt.Errorf("bus driver %s not implemented", builder.tickenConfig.Bus.Driver))
+		err := fmt.Errorf("bus driver %s not implemented", builder.tickenConfig.Bus.Driver)
+		log.TickenLogger.Panic().Err(err)
 	}
 
 	err := tickenBus.Connect(connString, builder.tickenConfig.Bus.Exchange)
 	if err != nil {
-		panic(err)
+		log.TickenLogger.Panic().Err(err)
 	}
+	log.TickenLogger.Info().Msg("bus subscriber connection established")
 
 	return tickenBus
 }
@@ -66,20 +79,32 @@ func (builder *Builder) BuildBusSubscriber(connString string) BusSubscriber {
 func (builder *Builder) BuildBusPublisher(connString string) BusPublisher {
 	var tickenBus BusPublisher = nil
 
-	switch builder.tickenConfig.Bus.Driver {
+	driverToUse := builder.tickenConfig.Bus.Driver
+	if env.TickenEnv.IsDev() {
+		driverToUse = config.DevBusDriver
+	}
+
+	switch driverToUse {
+	case config.DevBusDriver:
+		log.TickenLogger.Info().Msg("using bus publisher: " + config.DevBusDriver)
+		tickenBus = bus.NewTickenDevBusPublisher()
 	case config.RabbitMQDriver:
+		log.TickenLogger.Info().Msg("using bus publisher: " + config.RabbitMQDriver)
 		tickenBus = bus.NewRabbitMQPublisher()
 	default:
-		panic(fmt.Errorf("bus driver %s not implemented", builder.tickenConfig.Bus.Driver))
+		err := fmt.Errorf("bus driver %s not implemented", builder.tickenConfig.Bus.Driver)
+		log.TickenLogger.Panic().Err(err)
 	}
 
 	err := tickenBus.Connect(connString, builder.tickenConfig.Bus.Exchange)
 	if err != nil {
-		panic(err)
+		log.TickenLogger.Panic().Err(err)
 	}
+	log.TickenLogger.Info().Msg("bus publisher connection established")
 
 	return tickenBus
 }
+
 func (builder *Builder) BuildEngine() *gin.Engine {
 	return gin.Default()
 }
