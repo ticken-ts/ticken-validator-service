@@ -3,7 +3,7 @@ package app
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	gojwt "github.com/golang-jwt/jwt"
 	"ticken-validator-service/api"
 	"ticken-validator-service/api/controllers/healthController"
 	"ticken-validator-service/api/controllers/scannerController"
@@ -13,7 +13,9 @@ import (
 	"ticken-validator-service/env"
 	"ticken-validator-service/infra"
 	"ticken-validator-service/repos"
+	"ticken-validator-service/security/jwt"
 	"ticken-validator-service/services"
+	"ticken-validator-service/utils"
 )
 
 type TickenValidatorApp struct {
@@ -21,16 +23,16 @@ type TickenValidatorApp struct {
 	config          *config.Config
 	repoProvider    repos.IProvider
 	serviceProvider services.IProvider
-	subscriber      *async.Subscriber
 }
 
-func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorApp {
+func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValidatorApp {
 	ticketValidatorApp := new(TickenValidatorApp)
 
-	engine := builder.BuildEngine()
-	pvtbcCaller := builder.BuildPvtbcCaller()
-	db := builder.BuildDb(env.TickenEnv.DbConnString)
-	busSubscriber := builder.BuildBusSubscriber(env.TickenEnv.BusConnString)
+	engine := infraBuilder.BuildEngine()
+	pvtbcCaller := infraBuilder.BuildPvtbcCaller()
+	jwtVerifier := infraBuilder.BuildJWTVerifier()
+	db := infraBuilder.BuildDb(env.TickenEnv.DbConnString)
+	busSubscriber := infraBuilder.BuildBusSubscriber(env.TickenEnv.BusConnString)
 
 	// this provider is going to provider all repositories
 	// to the services
@@ -58,12 +60,11 @@ func New(builder *infra.Builder, tickenConfig *config.Config) *TickenValidatorAp
 
 	ticketValidatorApp.engine = engine
 	ticketValidatorApp.config = tickenConfig
-	ticketValidatorApp.subscriber = subscriber
 	ticketValidatorApp.repoProvider = repoProvider
 	ticketValidatorApp.serviceProvider = serviceProvider
 
 	var appMiddlewares = []api.Middleware{
-		middlewares.NewAuthMiddleware(serviceProvider, &tickenConfig.Server),
+		middlewares.NewAuthMiddleware(serviceProvider, jwtVerifier),
 	}
 
 	for _, middleware := range appMiddlewares {
@@ -94,15 +95,23 @@ func (tickenValidatorApp *TickenValidatorApp) Populate() {
 }
 
 func (tickenValidatorApp *TickenValidatorApp) EmitFakeJWT() {
-	fakeJWT := jwt.NewWithClaims(jwt.SigningMethodES256, jwt.MapClaims{
-		"sub":   "290c641a-55a1-40f5-acc3-d4ebe3626fdd",
-		"email": "user@ticken.com",
-	})
-
-	signedJWT, err := fakeJWT.SigningString()
+	rsaPrivKey, err := utils.LoadRSA(
+		tickenValidatorApp.config.Dev.JWTPrivateKey, tickenValidatorApp.config.Dev.JWTPublicKey)
 	if err != nil {
-		panic(fmt.Errorf("error generation fake JWT: %s", err.Error()))
+		panic(err)
 	}
 
-	fmt.Printf("DEV JWT: %s \n", signedJWT)
+	fakeJWT := gojwt.NewWithClaims(gojwt.SigningMethodRS256, &jwt.Claims{
+		Subject:           tickenValidatorApp.config.Dev.User.UserID,
+		Email:             tickenValidatorApp.config.Dev.User.Email,
+		PreferredUsername: tickenValidatorApp.config.Dev.User.Username,
+	})
+
+	signedJWT, err := fakeJWT.SignedString(rsaPrivKey)
+
+	if err != nil {
+		panic(fmt.Errorf("error generation fake Token: %s", err.Error()))
+	}
+
+	fmt.Printf("DEV Token: %s \n", signedJWT)
 }

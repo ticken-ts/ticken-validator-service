@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
 	"ticken-validator-service/infra/bus"
+	"ticken-validator-service/security/jwt"
 )
 
 type Db interface {
@@ -16,6 +17,11 @@ type Db interface {
 	// into the correct client depending on the
 	// driver
 	GetClient() interface{}
+}
+
+type HSM interface {
+	Store(data []byte) (string, error)
+	Retrieve(key string) ([]byte, error)
 }
 
 type BusSubscriber interface {
@@ -31,10 +37,14 @@ type BusPublisher interface {
 }
 
 type IBuilder interface {
+	BuildDb(connString string) Db
+	BuildHSM(encryptionKey string) HSM
 	BuildEngine() *gin.Engine
+	BuildJWTVerifier() jwt.Verifier
 	BuildPvtbcCaller() *pvtbc.Caller
 	BuildPvtbcListener() *pvtbc.Listener
-	BuildDb(connString string) Db
 	BuildBusPublisher(connString string) BusPublisher
-	BuildBusSubscriber(connString string) BusSubscriber
+
+	// atomic buildings
+	BuildAtomicPvtbcCaller(mspID, user, peerAddr string, userCert, userPriv, tlsCert []byte) (*pvtbc.Caller, error)
 }

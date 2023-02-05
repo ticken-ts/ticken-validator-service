@@ -27,8 +27,9 @@ func main() {
 	}
 
 	tickenValidatorService := app.New(builder, tickenConfig)
+	tickenValidatorService.Populate()
+
 	if tickenEnv.IsDev() {
-		tickenValidatorService.Populate()
 		tickenValidatorService.EmitFakeJWT()
 	}
 

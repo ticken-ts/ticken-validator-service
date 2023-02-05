@@ -1,7 +1,6 @@
 package services
 
 import (
-	"fmt"
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
 	"ticken-validator-service/models"
 	"ticken-validator-service/repos"
@@ -22,24 +21,25 @@ func NewTicketScanner(eventRepository repos.EventRepository, ticketRepository re
 }
 
 func (s *ticketScanner) Scan(eventID string, ticketID string, owner string) (*models.Ticket, error) {
-	event := s.eventRepository.FindEvent(eventID)
-	if event == nil {
-		return nil, fmt.Errorf("could not determine organizer channel")
-	}
-
-	if err := s.pvtbcCaller.SetChannel(event.PvtBCChannel); err != nil {
-		return nil, err
-	}
-
-	pvtbcTicket, err := s.pvtbcCaller.ScanTicket(ticketID, eventID, owner)
-	if err != nil {
-		return nil, err
-	}
-
-	ticket := models.NewTicket(pvtbcTicket.TicketID, pvtbcTicket.EventID)
-	if err := s.ticketRepository.AddTicket(ticket); err != nil {
-		return nil, err
-	}
-
-	return ticket, nil
+	//event := s.eventRepository.FindEvent(eventID)
+	//if event == nil {
+	//	return nil, fmt.Errorf("could not determine organizer channel")
+	//}
+	//
+	//if err := s.pvtbcCaller.SetChannel(event.PvtBCChannel); err != nil {
+	//	return nil, err
+	//}
+	//
+	//pvtbcTicket, err := s.pvtbcCaller.ScanTicket(ticketID, eventID, owner)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//ticket := models.NewTicket(pvtbcTicket.TicketID, pvtbcTicket.EventID)
+	//if err := s.ticketRepository.AddTicket(ticket); err != nil {
+	//	return nil, err
+	//}
+	//
+	//return ticket, nil
+	return nil, nil
 }

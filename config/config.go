@@ -3,13 +3,16 @@ package config
 import "github.com/spf13/viper"
 
 const DefaultConfigFilename = "config"
-const FileExtension = "json"
 
 type Config struct {
 	Database DatabaseConfig `mapstructure:"database"`
 	Pvtbc    PvtbcConfig    `mapstructure:"pvtbc"`
 	Server   ServerConfig   `mapstructure:"server"`
 	Bus      BusConfig      `mapstructure:"bus"`
+
+	// this field is going to be
+	// loaded only during dev or test env
+	Dev DevConfig `mapstructure:"dev"`
 }
 
 func Load(path string, filename string) (*Config, error) {
@@ -21,7 +24,7 @@ func Load(path string, filename string) (*Config, error) {
 
 	viper.AddConfigPath(path)
 	viper.SetConfigName(filename)
-	viper.SetConfigType(FileExtension)
+	viper.SetConfigType("json")
 
 	err := viper.ReadInConfig()
 	if err != nil {

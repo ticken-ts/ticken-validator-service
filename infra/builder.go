@@ -9,14 +9,17 @@ import (
 	"ticken-validator-service/env"
 	"ticken-validator-service/infra/bus"
 	"ticken-validator-service/infra/db"
+	"ticken-validator-service/infra/hsm"
 	"ticken-validator-service/log"
+	"ticken-validator-service/security/jwt"
+	"ticken-validator-service/utils"
 )
 
 type Builder struct {
 	tickenConfig *config.Config
 }
 
-var pc *peerconnector.PeerConnector = nil
+var pc peerconnector.PeerConnector = nil
 
 func NewBuilder(tickenConfig *config.Config) (*Builder, error) {
 	if tickenConfig == nil {
@@ -47,40 +50,66 @@ func (builder *Builder) BuildDb(connString string) Db {
 	return tickenDb
 }
 
-func (builder *Builder) BuildBusSubscriber(connString string) BusSubscriber {
-	var tickenBus BusSubscriber = nil
-
-	driverToUse := builder.tickenConfig.Bus.Driver
-	if env.TickenEnv.IsDev() {
-		driverToUse = config.DevBusDriver
-	}
-
-	switch driverToUse {
-	case config.DevBusDriver:
-		log.TickenLogger.Info().Msg("using bus publisher: " + config.DevBusDriver)
-		tickenBus = bus.NewTickenDevBusSubscriber()
-	case config.RabbitMQDriver:
-		log.TickenLogger.Info().Msg("using bus subscriber: " + config.RabbitMQDriver)
-		tickenBus = bus.NewRabbitMQSubscriber()
-	default:
-		err := fmt.Errorf("bus driver %s not implemented", builder.tickenConfig.Bus.Driver)
-		log.TickenLogger.Panic().Err(err)
-	}
-
-	err := tickenBus.Connect(connString, builder.tickenConfig.Bus.Exchange)
+func (builder *Builder) BuildHSM(encryptingKey string) HSM {
+	rootPath, err := utils.GetServiceRootPath()
 	if err != nil {
-		log.TickenLogger.Panic().Err(err)
+		panic(err)
 	}
-	log.TickenLogger.Info().Msg("bus subscriber connection established")
 
-	return tickenBus
+	localFileSystemHSM, err := hsm.NewLocalFileSystemHSM(encryptingKey, rootPath)
+	if err != nil {
+		panic(err)
+	}
+	return localFileSystemHSM
+}
+
+func (builder *Builder) BuildEngine() *gin.Engine {
+	return gin.Default()
+}
+
+func (builder *Builder) BuildJWTVerifier() jwt.Verifier {
+	var jwtVerifier jwt.Verifier
+
+	if env.TickenEnv.IsDev() || env.TickenEnv.IsTest() {
+		jwtPublicKey := builder.tickenConfig.Dev.JWTPublicKey
+		jwtPrivateKey := builder.tickenConfig.Dev.JWTPrivateKey
+
+		rsaPrivKey, err := utils.LoadRSA(jwtPrivateKey, jwtPublicKey)
+		if err != nil {
+			log.TickenLogger.Panic().Err(err)
+		}
+
+		jwtVerifier = jwt.NewOfflineVerifier(rsaPrivKey)
+	} else {
+		appClientID := builder.tickenConfig.Server.ClientID
+		identityIssuer := builder.tickenConfig.Server.IdentityIssuer
+		jwtVerifier = jwt.NewOnlineVerifier(identityIssuer, appClientID)
+	}
+
+	return jwtVerifier
+}
+
+func (builder *Builder) BuildPvtbcCaller() *pvtbc.Caller {
+	caller, err := pvtbc.NewCaller(buildPeerConnector(builder.tickenConfig.Pvtbc, builder.tickenConfig.Dev))
+	if err != nil {
+		panic(err)
+	}
+	return caller
+}
+
+func (builder *Builder) BuildPvtbcListener() *pvtbc.Listener {
+	listener, err := pvtbc.NewListener(buildPeerConnector(builder.tickenConfig.Pvtbc, builder.tickenConfig.Dev))
+	if err != nil {
+		panic(err)
+	}
+	return listener
 }
 
 func (builder *Builder) BuildBusPublisher(connString string) BusPublisher {
 	var tickenBus BusPublisher = nil
 
 	driverToUse := builder.tickenConfig.Bus.Driver
-	if env.TickenEnv.IsDev() {
+	if env.TickenEnv.IsDev() && !builder.tickenConfig.Dev.Mock.DisableBusMock {
 		driverToUse = config.DevBusDriver
 	}
 
@@ -105,32 +134,67 @@ func (builder *Builder) BuildBusPublisher(connString string) BusPublisher {
 	return tickenBus
 }
 
-func (builder *Builder) BuildEngine() *gin.Engine {
-	return gin.Default()
-}
+func (builder *Builder) BuildBusSubscriber(connString string) BusSubscriber {
+	var tickenBus BusSubscriber = nil
 
-func (builder *Builder) BuildPvtbcCaller() *pvtbc.Caller {
-	caller, err := pvtbc.NewCaller(buildPeerConnector(builder.tickenConfig.Pvtbc))
-	if err != nil {
-		panic(err)
+	driverToUse := builder.tickenConfig.Bus.Driver
+	if env.TickenEnv.IsDev() && !builder.tickenConfig.Dev.Mock.DisableBusMock {
+		driverToUse = config.DevBusDriver
 	}
-	return caller
-}
 
-func (builder *Builder) BuildPvtbcListener() *pvtbc.Listener {
-	listener, err := pvtbc.NewListener(buildPeerConnector(builder.tickenConfig.Pvtbc))
-	if err != nil {
-		panic(err)
+	switch driverToUse {
+	case config.DevBusDriver:
+		log.TickenLogger.Info().Msg("using bus publisher: " + config.DevBusDriver)
+		tickenBus = bus.NewTickenDevBusSubscriber()
+	case config.RabbitMQDriver:
+		log.TickenLogger.Info().Msg("using bus subscriber: " + config.RabbitMQDriver)
+		tickenBus = bus.NewRabbitMQSubscriber()
+	default:
+		err := fmt.Errorf("bus driver %s not implemented", builder.tickenConfig.Bus.Driver)
+		log.TickenLogger.Panic().Err(err)
 	}
-	return listener
+
+	err := tickenBus.Connect(connString, builder.tickenConfig.Bus.Exchange)
+	if err != nil {
+		log.TickenLogger.Panic().Err(err)
+	}
+	log.TickenLogger.Info().Msg("bus subscriber connection established")
+
+	return tickenBus
 }
 
-func buildPeerConnector(config config.PvtbcConfig) *peerconnector.PeerConnector {
+func (builder *Builder) BuildAtomicPvtbcCaller(mspID, user, peerAddr string, userCert, userPriv, tlsCert []byte) (*pvtbc.Caller, error) {
+	var pc peerconnector.PeerConnector
+	if env.TickenEnv.IsDev() && !builder.tickenConfig.Dev.Mock.DisablePVTBCMock {
+		pc = peerconnector.NewDev(mspID, user)
+	} else {
+		pc = peerconnector.NewWithRawCredentials(mspID, userCert, userPriv)
+	}
+
+	err := pc.ConnectWithRawTlsCert(peerAddr, peerAddr, tlsCert)
+	if err != nil {
+		return nil, err
+	}
+
+	caller, err := pvtbc.NewCaller(buildPeerConnector(builder.tickenConfig.Pvtbc, builder.tickenConfig.Dev))
+	if err != nil {
+		return nil, err
+	}
+
+	return caller, nil
+}
+
+func buildPeerConnector(config config.PvtbcConfig, devConfig config.DevConfig) peerconnector.PeerConnector {
 	if pc != nil {
 		return pc
 	}
 
-	pc := peerconnector.New(config.MspID, config.CertificatePath, config.PrivateKeyPath)
+	var pc peerconnector.PeerConnector
+	if env.TickenEnv.IsDev() && !devConfig.Mock.DisablePVTBCMock {
+		pc = peerconnector.NewDev(config.MspID, "admin")
+	} else {
+		pc = peerconnector.New(config.MspID, config.CertificatePath, config.PrivateKeyPath)
+	}
 
 	err := pc.Connect(config.PeerEndpoint, config.GatewayPeer, config.TLSCertificatePath)
 	if err != nil {
