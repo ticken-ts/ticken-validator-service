@@ -35,6 +35,25 @@ func (r *TicketMongoDBRepository) AddTicket(ticket *models.Ticket) error {
 	return nil
 }
 
+func (r *TicketMongoDBRepository) AddManyTickets(tickets []*models.Ticket) error {
+	storeContext, cancel := r.generateOpSubcontext()
+	defer cancel()
+
+	ticketCollection := r.getCollection()
+
+	ticketsData := make([]interface{}, len(tickets))
+	for i, ticket := range tickets {
+		ticketsData[i] = ticket
+	}
+
+	_, err := ticketCollection.InsertMany(storeContext, ticketsData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *TicketMongoDBRepository) FindTicket(eventID string, ticketID string) *models.Ticket {
 	findContext, cancel := r.generateOpSubcontext()
 	defer cancel()

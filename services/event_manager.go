@@ -1,25 +1,29 @@
 package services
 
 import (
+	"github.com/google/uuid"
 	"ticken-validator-service/models"
 	"ticken-validator-service/repos"
 )
 
-type eventManager struct {
-	eventRepository repos.EventRepository
+type EventManager struct {
+	eventRepo repos.IEventRepository
 }
 
-func NewEventManager(eventRepository repos.EventRepository) EventManager {
-	return &eventManager{
-		eventRepository: eventRepository,
+func NewEventManager(repoProvider repos.IProvider) *EventManager {
+	return &EventManager{eventRepo: repoProvider.GetEventRepository()}
+}
+
+func (eventManager *EventManager) AddEvent(eventID, organizerID uuid.UUID, pvtBCChannel, pubBCAddress string) (*models.Event, error) {
+	event := &models.Event{
+		EventID:      eventID,
+		OrganizerID:  organizerID,
+		PvtBCChannel: pvtBCChannel,
+		PubBCAddress: pubBCAddress,
 	}
-}
 
-func (eventManager *eventManager) AddEvent(EventID string, OrganizerID string, PvtBCChannel string) (*models.Event, error) {
-	event := models.Event{EventID: EventID, OrganizerID: OrganizerID, PvtBCChannel: PvtBCChannel}
-	err := eventManager.eventRepository.AddEvent(&event)
-	if err != nil {
+	if err := eventManager.eventRepo.AddEvent(event); err != nil {
 		return nil, err
 	}
-	return &event, err
+	return event, nil
 }

@@ -3,6 +3,7 @@ package infra
 import (
 	"context"
 	"github.com/gin-gonic/gin"
+	pubbc "github.com/ticken-ts/ticken-pubbc-connector"
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
 	"ticken-validator-service/infra/bus"
 	"ticken-validator-service/security/jwt"
@@ -43,7 +44,10 @@ type IBuilder interface {
 	BuildJWTVerifier() jwt.Verifier
 	BuildPvtbcCaller() *pvtbc.Caller
 	BuildPvtbcListener() *pvtbc.Listener
+	BuildPubbcAdmin(privateKey string) pubbc.Admin
+	BuildPubbcCaller(privateKey string) pubbc.Caller
 	BuildBusPublisher(connString string) BusPublisher
+	BuildBusSubscriber(connString string) BusSubscriber
 
 	// atomic buildings
 	BuildAtomicPvtbcCaller(mspID, user, peerAddr string, userCert, userPriv, tlsCert []byte) (*pvtbc.Caller, error)

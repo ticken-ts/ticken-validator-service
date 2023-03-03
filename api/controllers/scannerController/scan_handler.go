@@ -1,25 +1,44 @@
 package scannerController
 
 import (
-	"github.com/coreos/go-oidc"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"net/http"
 	"ticken-validator-service/api/mappers"
+	"ticken-validator-service/security/jwt"
 	"ticken-validator-service/utils"
 )
 
 func (controller *ScannerController) Scan(c *gin.Context) {
-	eventID, ticketID := c.Param("eventID"), c.Param("ticketID")
-	owner := c.MustGet("jwt").(*oidc.IDToken).Subject
+	validatorID := c.MustGet("jwt").(*jwt.Token).Subject
 
-	ticketScanner := controller.serviceProvider.GetTicketScanner()
+	signature := c.Param("signature")
 
-	ticketScanned, err := ticketScanner.Scan(eventID, ticketID, owner)
+	eventID, err := uuid.Parse(c.Param("eventID"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.HttpResponse{Message: err.Error()})
 		c.Abort()
 		return
 	}
+
+	ticketID, err := uuid.Parse(c.Param("ticketID"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.HttpResponse{Message: err.Error()})
+		c.Abort()
+		return
+	}
+
+	ticketScanner := controller.serviceProvider.GetTicketScanner()
+
+	ticketScanned, err := ticketScanner.Scan(eventID, ticketID, signature, validatorID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.HttpResponse{Message: err.Error()})
+		c.Abort()
+		return
+	}
+
+	uuidVal := uuid.New()
+	uuidVal.ID()
 
 	ticketDTO := mappers.MapTicketToDTO(ticketScanned)
 

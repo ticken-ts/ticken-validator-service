@@ -7,7 +7,7 @@ import (
 
 func MapTicketToDTO(ticket *models.Ticket) *dto.Ticket {
 	return &dto.Ticket{
-		TicketID: ticket.TicketID,
-		EventID:  ticket.EventID,
+		TicketID: ticket.TicketID.String(),
+		EventID:  ticket.EventID.String(),
 	}
 }

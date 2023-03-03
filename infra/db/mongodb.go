@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-type mongoDb struct {
+type MongoDB struct {
 	connString string
 	client     *mongo.Client
 }
@@ -25,11 +25,11 @@ var (
 	uuidSubtype = byte(0x04)
 )
 
-func NewMongoDb() *mongoDb {
-	return new(mongoDb)
+func NewMongoDb() *MongoDB {
+	return new(MongoDB)
 }
 
-func (mongoDb *mongoDb) Connect(connString string) error {
+func (mongoDb *MongoDB) Connect(connString string) error {
 	if mongoDb.IsConnected() {
 		return fmt.Errorf("DB is already connected")
 	}
@@ -63,15 +63,14 @@ func (mongoDb *mongoDb) Connect(connString string) error {
 	mongoDb.client = client
 	mongoDb.connString = connString
 
-	fmt.Println("Connected to MongoDB")
 	return nil
 }
 
-func (mongoDb *mongoDb) IsConnected() bool {
+func (mongoDb *MongoDB) IsConnected() bool {
 	return mongoDb.client != nil
 }
 
-func (mongoDb *mongoDb) GetClient() interface{} {
+func (mongoDb *MongoDB) GetClient() interface{} {
 	return mongoDb.client
 }
 

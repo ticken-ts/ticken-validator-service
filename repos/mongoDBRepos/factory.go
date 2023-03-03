@@ -25,3 +25,7 @@ func (factory *Factory) BuildEventRepository() any {
 func (factory *Factory) BuildTicketRepository() any {
 	return NewTicketRepository(factory.dbClient, factory.dbName)
 }
+
+func (factory *Factory) BuildAttendantRepository() any {
+	return NewAttendantRepository(factory.dbClient, factory.dbName)
+}

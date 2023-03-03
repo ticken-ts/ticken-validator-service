@@ -1,15 +1,10 @@
 package models
 
-type Event struct {
-	EventID      string `json:"event_id"`
-	OrganizerID  string `json:"organizer_id"`
-	PvtBCChannel string `json:"pvt_bc_channel"`
-}
+import "github.com/google/uuid"
 
-func NewEvent(EventID string, OrganizerID string, PvtBCChannel string) *Event {
-	return &Event{
-		EventID:      EventID,
-		OrganizerID:  OrganizerID,
-		PvtBCChannel: PvtBCChannel,
-	}
+type Event struct {
+	EventID      uuid.UUID `bson:"event_id"`
+	OrganizerID  uuid.UUID `bson:"organizer_id"`
+	PvtBCChannel string    `bson:"pvt_bc_channel"`
+	PubBCAddress string    `bson:"pub_bc_address"`
 }

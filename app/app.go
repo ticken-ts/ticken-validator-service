@@ -32,6 +32,7 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 	pvtbcCaller := infraBuilder.BuildPvtbcCaller()
 	jwtVerifier := infraBuilder.BuildJWTVerifier()
 	db := infraBuilder.BuildDb(env.TickenEnv.DbConnString)
+	pubbcCaller := infraBuilder.BuildPubbcCaller(env.TickenEnv.TickenWalletKey)
 	busSubscriber := infraBuilder.BuildBusSubscriber(env.TickenEnv.BusConnString)
 
 	// this provider is going to provider all repositories
@@ -43,7 +44,7 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 
 	// this provider is going to provide all services
 	// needed by the controllers to execute it operations
-	serviceProvider, err := services.NewProvider(repoProvider, pvtbcCaller)
+	serviceProvider, err := services.NewProvider(repoProvider, pvtbcCaller, pubbcCaller)
 	if err != nil {
 		panic(err)
 	}

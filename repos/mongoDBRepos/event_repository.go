@@ -1,20 +1,13 @@
 package mongoDBRepos
 
 import (
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"ticken-validator-service/models"
 )
 
 const EventCollectionName = "events"
-
-type eventDbModel struct {
-	mongoID      primitive.ObjectID `bson:"_id"`
-	EventID      string             `bson:"event_id"`
-	OrganizerID  string             `bson:"organizer_id"`
-	PvtBCChannel string             `bson:"pvt_bc_channel"`
-}
 
 type EventMongoDBRepository struct {
 	baseRepository
@@ -43,7 +36,7 @@ func (r *EventMongoDBRepository) AddEvent(event *models.Event) error {
 	return nil
 }
 
-func (r *EventMongoDBRepository) FindEvent(eventID string) *models.Event {
+func (r *EventMongoDBRepository) FindEvent(eventID uuid.UUID) *models.Event {
 	findContext, cancel := r.generateOpSubcontext()
 	defer cancel()
 

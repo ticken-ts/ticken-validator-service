@@ -8,9 +8,10 @@ import (
 )
 
 type Provider struct {
-	reposFactory     IFactory
-	eventRepository  EventRepository
-	ticketRepository TicketRepository
+	reposFactory        IFactory
+	eventRepository     IEventRepository
+	ticketRepository    ITicketRepository
+	attendantRepository IAttendantRepository
 }
 
 func NewProvider(db infra.Db, dbConfig *config.DatabaseConfig) (*Provider, error) {
@@ -26,16 +27,23 @@ func NewProvider(db infra.Db, dbConfig *config.DatabaseConfig) (*Provider, error
 	return provider, nil
 }
 
-func (provider *Provider) GetEventRepository() EventRepository {
+func (provider *Provider) GetEventRepository() IEventRepository {
 	if provider.eventRepository == nil {
-		provider.eventRepository = provider.reposFactory.BuildEventRepository().(EventRepository)
+		provider.eventRepository = provider.reposFactory.BuildEventRepository().(IEventRepository)
 	}
 	return provider.eventRepository
 }
 
-func (provider *Provider) GetTicketRepository() TicketRepository {
+func (provider *Provider) GetTicketRepository() ITicketRepository {
 	if provider.ticketRepository == nil {
-		provider.ticketRepository = provider.reposFactory.BuildTicketRepository().(TicketRepository)
+		provider.ticketRepository = provider.reposFactory.BuildTicketRepository().(ITicketRepository)
 	}
 	return provider.ticketRepository
+}
+
+func (provider *Provider) GetAttendantRepository() IAttendantRepository {
+	if provider.attendantRepository == nil {
+		provider.attendantRepository = provider.reposFactory.BuildAttendantRepository().(IAttendantRepository)
+	}
+	return provider.attendantRepository
 }
