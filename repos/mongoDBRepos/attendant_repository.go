@@ -58,7 +58,7 @@ func (r *EventMongoDBRepository) FindAttendantByWalletAddr(wallerAddr string) *m
 	defer cancel()
 
 	attendantsCollection := r.getCollection()
-	result := attendantsCollection.FindOne(findContext, bson.M{"wallet_addr": wallerAddr})
+	result := attendantsCollection.FindOne(findContext, bson.M{"wallet_address": wallerAddr})
 
 	var foundAttendant models.Attendant
 	err := result.Decode(&foundAttendant)

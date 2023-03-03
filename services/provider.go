@@ -7,15 +7,17 @@ import (
 )
 
 type Provider struct {
-	TicketScanner ITicketScanner
-	TicketSyncer  ITicketSyncer
-	EventManager  IEventManager
+	AttendantManager IAttendantManager
+	TicketScanner    ITicketScanner
+	TicketSyncer     ITicketSyncer
+	EventManager     IEventManager
 }
 
 func NewProvider(repoProvider repos.IProvider, pvtbcCaller *pvtbc.Caller, pubbcCaller pubbc.Caller) (IProvider, error) {
 	provider := new(Provider)
 
 	provider.TicketSyncer = NewTicketSyncer(pvtbcCaller, pubbcCaller, repoProvider)
+	provider.AttendantManager = NewAttendantManager(repoProvider)
 	provider.TicketScanner = NewTicketScanner(repoProvider)
 	provider.EventManager = NewEventManager(repoProvider)
 
@@ -32,4 +34,8 @@ func (provider *Provider) GetTicketSyncer() ITicketSyncer {
 
 func (provider *Provider) GetEventManager() IEventManager {
 	return provider.EventManager
+}
+
+func (provider *Provider) GetAttendantManager() IAttendantManager {
+	return provider.AttendantManager
 }

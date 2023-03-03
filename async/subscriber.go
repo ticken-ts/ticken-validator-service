@@ -9,8 +9,12 @@ import (
 )
 
 type Subscriber struct {
-	busSubscriber  infra.BusSubscriber
-	eventProcessor *EventSubscriber
+	busSubscriber infra.BusSubscriber
+
+	/********+*** processors ************/
+	eventProcessor     *EventSubscriber
+	attendantProcessor *AttendantSubscriber
+	/************************************/
 }
 
 func NewSubscriber(busSubscriber infra.BusSubscriber, serviceProvider services.IProvider) (*Subscriber, error) {
@@ -19,8 +23,9 @@ func NewSubscriber(busSubscriber infra.BusSubscriber, serviceProvider services.I
 	}
 
 	subscriber := &Subscriber{
-		busSubscriber:  busSubscriber,
-		eventProcessor: NewEventSubscriber(serviceProvider.GetEventManager()),
+		busSubscriber:      busSubscriber,
+		eventProcessor:     NewEventSubscriber(serviceProvider.GetEventManager()),
+		attendantProcessor: NewAttendantSubscriber(serviceProvider.GetAttendantManager()),
 	}
 
 	return subscriber, nil
@@ -45,6 +50,9 @@ func (processor *Subscriber) handler(rawmsg []byte) {
 	switch msg.Type {
 	case NewEventMessageType:
 		processingError = processor.eventProcessor.NewEventHandler(msg.Data)
+	case NewAttendantMessageType:
+		processingError = processor.attendantProcessor.NewAttendantHandler(msg.Data)
+
 	default:
 		processingError = fmt.Errorf("message type %s not supportaed\n", msg.Type)
 	}
