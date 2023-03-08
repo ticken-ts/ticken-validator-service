@@ -18,15 +18,15 @@ func main() {
 
 	tickenConfig, err := config.Load(tickenEnv.ConfigFilePath, tickenEnv.ConfigFileName)
 	if err != nil {
-		log.TickenLogger.Panic().Err(err)
+		log.TickenLogger.Panic().Msg(err.Error())
 	}
 
-	builder, err := infra.NewBuilder(tickenConfig)
+	infraBuilder, err := infra.NewBuilder(tickenConfig)
 	if err != nil {
-		log.TickenLogger.Panic().Err(err)
+		log.TickenLogger.Panic().Msg(err.Error())
 	}
 
-	tickenValidatorService := app.New(builder, tickenConfig)
+	tickenValidatorService := app.New(infraBuilder, tickenConfig)
 	tickenValidatorService.Populate()
 
 	if tickenEnv.IsDev() {
