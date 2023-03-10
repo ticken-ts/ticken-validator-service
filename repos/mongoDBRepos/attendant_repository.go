@@ -23,7 +23,7 @@ func NewAttendantRepository(dbClient *mongo.Client, dbName string) *AttendantMon
 	}
 }
 
-func (r *EventMongoDBRepository) AddAttendant(attendant *models.Attendant) error {
+func (r *AttendantMongoDBRepository) AddAttendant(attendant *models.Attendant) error {
 	storeContext, cancel := r.generateOpSubcontext()
 	defer cancel()
 
@@ -36,7 +36,7 @@ func (r *EventMongoDBRepository) AddAttendant(attendant *models.Attendant) error
 	return nil
 }
 
-func (r *EventMongoDBRepository) FindAttendant(attendantID uuid.UUID) *models.Attendant {
+func (r *AttendantMongoDBRepository) FindAttendant(attendantID uuid.UUID) *models.Attendant {
 	findContext, cancel := r.generateOpSubcontext()
 	defer cancel()
 
@@ -53,7 +53,7 @@ func (r *EventMongoDBRepository) FindAttendant(attendantID uuid.UUID) *models.At
 	return &foundAttendant
 }
 
-func (r *EventMongoDBRepository) FindAttendantByWalletAddr(wallerAddr string) *models.Attendant {
+func (r *AttendantMongoDBRepository) FindAttendantByWalletAddr(wallerAddr string) *models.Attendant {
 	findContext, cancel := r.generateOpSubcontext()
 	defer cancel()
 
@@ -68,23 +68,4 @@ func (r *EventMongoDBRepository) FindAttendantByWalletAddr(wallerAddr string) *m
 	}
 
 	return &foundAttendant
-}
-
-func (r *EventMongoDBRepository) AddManyTickets(tickets []*models.Ticket) error {
-	storeContext, cancel := r.generateOpSubcontext()
-	defer cancel()
-
-	attendantsCollection := r.getCollection()
-
-	toAdd := make([]interface{}, len(tickets))
-	for i, ticket := range tickets {
-		toAdd[i] = ticket
-	}
-
-	_, err := attendantsCollection.InsertMany(storeContext, toAdd)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

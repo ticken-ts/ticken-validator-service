@@ -1,6 +1,7 @@
 package mongoDBRepos
 
 import (
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"ticken-validator-service/models"
@@ -54,7 +55,7 @@ func (r *TicketMongoDBRepository) AddManyTickets(tickets []*models.Ticket) error
 	return nil
 }
 
-func (r *TicketMongoDBRepository) FindTicket(eventID string, ticketID string) *models.Ticket {
+func (r *TicketMongoDBRepository) FindTicket(eventID uuid.UUID, ticketID uuid.UUID) *models.Ticket {
 	findContext, cancel := r.generateOpSubcontext()
 	defer cancel()
 
