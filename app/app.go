@@ -68,17 +68,19 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 		middlewares.NewAuthMiddleware(serviceProvider, jwtVerifier),
 	}
 
-	for _, middleware := range appMiddlewares {
-		middleware.Setup(engine)
-	}
-
 	var appControllers = []api.Controller{
 		healthController.New(serviceProvider),
 		scannerController.New(serviceProvider),
 	}
 
+	apiRouter := engine.Group(tickenConfig.Server.APIPrefix)
+
+	for _, middleware := range appMiddlewares {
+		middleware.Setup(apiRouter)
+	}
+
 	for _, controller := range appControllers {
-		controller.Setup(engine)
+		controller.Setup(apiRouter)
 	}
 
 	return ticketValidatorApp
