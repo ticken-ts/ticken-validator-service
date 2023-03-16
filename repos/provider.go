@@ -12,6 +12,7 @@ type Provider struct {
 	eventRepository     IEventRepository
 	ticketRepository    ITicketRepository
 	attendantRepository IAttendantRepository
+	validatorRepository IValidatorRepository
 }
 
 func NewProvider(db infra.Db, dbConfig *config.DatabaseConfig) (*Provider, error) {
@@ -46,4 +47,11 @@ func (provider *Provider) GetAttendantRepository() IAttendantRepository {
 		provider.attendantRepository = provider.reposFactory.BuildAttendantRepository().(IAttendantRepository)
 	}
 	return provider.attendantRepository
+}
+
+func (provider *Provider) GetValidatorRepository() IValidatorRepository {
+	if provider.validatorRepository == nil {
+		provider.validatorRepository = provider.reposFactory.BuildValidatorRepository().(IValidatorRepository)
+	}
+	return provider.validatorRepository
 }

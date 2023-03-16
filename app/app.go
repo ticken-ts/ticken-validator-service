@@ -8,6 +8,7 @@ import (
 	"ticken-validator-service/api/controllers/healthController"
 	"ticken-validator-service/api/controllers/scannerController"
 	"ticken-validator-service/api/middlewares"
+	"ticken-validator-service/app/fakes"
 	"ticken-validator-service/async"
 	"ticken-validator-service/config"
 	"ticken-validator-service/env"
@@ -23,6 +24,12 @@ type TickenValidatorApp struct {
 	config          *config.Config
 	repoProvider    repos.IProvider
 	serviceProvider services.IProvider
+
+	// populators are intended to populate
+	// useful data. It can be testdata or
+	// data that should be present on the db
+	// before the service is available
+	populators []Populator
 }
 
 func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValidatorApp {
@@ -83,6 +90,11 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 		controller.Setup(apiRouter)
 	}
 
+	var appPopulators = []Populator{
+		fakes.NewFakeUsersPopulator(repoProvider, tickenConfig.Dev.User),
+	}
+	ticketValidatorApp.populators = appPopulators
+
 	return ticketValidatorApp
 }
 
@@ -95,6 +107,12 @@ func (tickenValidatorApp *TickenValidatorApp) Start() {
 }
 
 func (tickenValidatorApp *TickenValidatorApp) Populate() {
+	for _, populator := range tickenValidatorApp.populators {
+		err := populator.Populate()
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func (tickenValidatorApp *TickenValidatorApp) EmitFakeJWT() {
