@@ -31,5 +31,5 @@ func (factory *Factory) BuildAttendantRepository() any {
 }
 
 func (factory *Factory) BuildValidatorRepository() any {
-	return NewAttendantRepository(factory.dbClient, factory.dbName)
+	return NewValidatorRepository(factory.dbClient, factory.dbName)
 }
