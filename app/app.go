@@ -92,6 +92,7 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 
 	var appPopulators = []Populator{
 		fakes.NewFakeUsersPopulator(repoProvider, tickenConfig.Dev.User),
+		fakes.NewFakeTicketsPopulator(repoProvider),
 	}
 	ticketValidatorApp.populators = appPopulators
 

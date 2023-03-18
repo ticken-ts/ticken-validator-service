@@ -1,10 +1,12 @@
 package models
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
+	"encoding/base64"
+	"fmt"
 	"github.com/google/uuid"
 	"math/big"
+	"ticken-validator-service/utils"
+	"time"
 )
 
 type Ticket struct {
@@ -22,11 +24,25 @@ type Ticket struct {
 	AttendantID         uuid.UUID `bson:"attendant_id"`
 	AttendantWalletAddr string    `bson:"attendant_addr"`
 	/*******************************************/
+
+	/******************* scan ******************/
+	ScannedAt time.Time `bson:"scanned_at"`
+	ScannedBy uuid.UUID `bson:"scanned_by"`
+	/*******************************************/
+
 }
 
 func (ticket *Ticket) GetTicketFingerprint() string {
 	ticketFingerprintData := ticket.ContractAddr + "/" + ticket.TokenID.Text(16)
-	h := sha256.New()
-	h.Write([]byte(ticketFingerprintData))
-	return hex.EncodeToString(h.Sum(nil))
+	hash := utils.HashSHA256(ticketFingerprintData)
+	return base64.URLEncoding.EncodeToString(hash)
+}
+
+func (ticket *Ticket) Scan(validatorID uuid.UUID) error {
+	if ticket.ScannedBy != uuid.Nil {
+		return fmt.Errorf("ticket already scanned")
+	}
+	ticket.ScannedBy = validatorID
+	ticket.ScannedAt = time.Now()
+	return nil
 }

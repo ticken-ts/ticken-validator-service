@@ -3,7 +3,6 @@ package fakes
 import (
 	"github.com/google/uuid"
 	"ticken-validator-service/config"
-	"ticken-validator-service/env"
 	"ticken-validator-service/models"
 	"ticken-validator-service/repos"
 )
@@ -21,10 +20,6 @@ func NewFakeUsersPopulator(reposProvider repos.IProvider, devUserInfo config.Dev
 }
 
 func (populator *FakeUsersPopulator) Populate() error {
-	if !env.TickenEnv.IsDev() {
-		return nil
-	}
-
 	uuidDevUser, err := uuid.Parse(populator.devUserInfo.UserID)
 	if err != nil {
 		return err

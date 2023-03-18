@@ -52,3 +52,7 @@ func (r *EventMongoDBRepository) FindEvent(eventID uuid.UUID) *models.Event {
 
 	return &foundEvent
 }
+
+func (r *EventMongoDBRepository) AnyWithID(eventID uuid.UUID) bool {
+	return r.FindEvent(eventID) != nil
+}

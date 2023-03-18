@@ -6,6 +6,7 @@ import (
 )
 
 type IEventRepository interface {
+	AnyWithID(eventID uuid.UUID) bool
 	AddEvent(event *models.Event) error
 	FindEvent(eventID uuid.UUID) *models.Event
 }
@@ -13,10 +14,12 @@ type IEventRepository interface {
 type ITicketRepository interface {
 	AddTicket(ticket *models.Ticket) error
 	AddManyTickets(ticket []*models.Ticket) error
+	UpdateTicketScanData(ticket *models.Ticket) *models.Ticket
 	FindTicket(eventID uuid.UUID, ticketID uuid.UUID) *models.Ticket
 }
 
 type IAttendantRepository interface {
+	AnyWithID(attendantID uuid.UUID) bool
 	AddAttendant(attendant *models.Attendant) error
 	FindAttendant(attendantID uuid.UUID) *models.Attendant
 	FindAttendantByWalletAddr(wallerAddr string) *models.Attendant

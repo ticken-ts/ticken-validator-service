@@ -13,7 +13,7 @@ type IProvider interface {
 }
 
 type ITicketScanner interface {
-	Scan(eventID, ticketID uuid.UUID, signature string, validatorID uuid.UUID) (*models.Ticket, error)
+	Scan(eventID, ticketID uuid.UUID, signature []byte, validatorID uuid.UUID) (*models.Ticket, error)
 }
 
 type ITicketSyncer interface {

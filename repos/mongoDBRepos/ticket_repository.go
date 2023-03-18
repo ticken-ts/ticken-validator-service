@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"ticken-validator-service/models"
 )
 
@@ -70,4 +71,32 @@ func (r *TicketMongoDBRepository) FindTicket(eventID uuid.UUID, ticketID uuid.UU
 	}
 
 	return &foundTicket
+}
+
+func (r *TicketMongoDBRepository) UpdateTicketScanData(ticket *models.Ticket) *models.Ticket {
+	findContext, cancel := r.generateOpSubcontext()
+	defer cancel()
+
+	updateOptions := new(options.FindOneAndUpdateOptions)
+	updateOptions.SetReturnDocument(options.After)
+
+	tickets := r.getCollection()
+	result := tickets.FindOneAndUpdate(
+		findContext,
+		bson.M{"ticket_id": ticket.TicketID, "event_id": ticket.EventID},
+		bson.M{
+			"$set": bson.M{
+				"scanned_by": ticket.ScannedBy,
+				"scanned_at": ticket.ScannedAt,
+			},
+		},
+		updateOptions,
+	)
+
+	updatedTicket := new(models.Ticket)
+	err := result.Decode(updatedTicket)
+	if err != nil {
+		return nil
+	}
+	return updatedTicket
 }

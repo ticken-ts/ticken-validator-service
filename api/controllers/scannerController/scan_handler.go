@@ -1,6 +1,7 @@
 package scannerController
 
 import (
+	"encoding/base64"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -12,7 +13,7 @@ import (
 func (controller *ScannerController) Scan(c *gin.Context) {
 	validatorID := c.MustGet("jwt").(*jwt.Token).Subject
 
-	signature := c.Param("signature")
+	b64signature := c.Query("signature")
 
 	eventID, err := uuid.Parse(c.Param("eventID"))
 	if err != nil {
@@ -28,6 +29,13 @@ func (controller *ScannerController) Scan(c *gin.Context) {
 		return
 	}
 
+	signature, err := base64.URLEncoding.DecodeString(b64signature)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.HttpResponse{Message: err.Error()})
+		c.Abort()
+		return
+	}
+
 	ticketScanner := controller.serviceProvider.GetTicketScanner()
 
 	ticketScanned, err := ticketScanner.Scan(eventID, ticketID, signature, validatorID)
@@ -36,9 +44,6 @@ func (controller *ScannerController) Scan(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-	uuidVal := uuid.New()
-	uuidVal.ID()
 
 	ticketDTO := mappers.MapTicketToDTO(ticketScanned)
 

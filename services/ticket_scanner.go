@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"ticken-validator-service/models"
 	"ticken-validator-service/repos"
+	"ticken-validator-service/utils"
 )
 
 type TicketScanner struct {
@@ -25,7 +26,7 @@ func NewTicketScanner(repoProvider repos.IProvider) *TicketScanner {
 	}
 }
 
-func (s *TicketScanner) Scan(eventID, ticketID uuid.UUID, signature string, validatorID uuid.UUID) (*models.Ticket, error) {
+func (s *TicketScanner) Scan(eventID, ticketID uuid.UUID, signature []byte, validatorID uuid.UUID) (*models.Ticket, error) {
 	ticket := s.ticketRepo.FindTicket(eventID, ticketID)
 	if ticket == nil {
 		return nil, fmt.Errorf("ticket not found")
@@ -36,14 +37,22 @@ func (s *TicketScanner) Scan(eventID, ticketID uuid.UUID, signature string, vali
 		return nil, fmt.Errorf("attendant not found")
 	}
 
+	if err := ticket.Scan(validatorID); err != nil {
+		return nil, err
+	}
+
 	if err := s.validateSignature(ticketOwner.PublicKey, signature, ticket); err != nil {
 		return nil, fmt.Errorf("ticket signature is not valid")
+	}
+
+	if ticket := s.ticketRepo.UpdateTicketScanData(ticket); ticket == nil {
+		return nil, fmt.Errorf("failed to update ticket scan data")
 	}
 
 	return ticket, nil
 }
 
-func (s *TicketScanner) validateSignature(publicKey []byte, signature string, ticket *models.Ticket) error {
+func (s *TicketScanner) validateSignature(publicKey []byte, signature []byte, ticket *models.Ticket) error {
 	ticketFingerprint := ticket.GetTicketFingerprint()
 
 	block, _ := pem.Decode(publicKey)
@@ -56,13 +65,15 @@ func (s *TicketScanner) validateSignature(publicKey []byte, signature string, ti
 		return err
 	}
 
-	if pubKey, ok := pub.(*rsa.PublicKey); ok {
-		err := rsa.VerifyPKCS1v15(pubKey, crypto.SHA256, []byte(ticketFingerprint), []byte(signature))
-		if err != nil {
-			return err
-		}
-		return nil
+	pubKey, ok := pub.(*rsa.PublicKey)
+	if !ok {
+		return fmt.Errorf("failed to decode public key")
 	}
 
-	return fmt.Errorf("failed to generate public key")
+	err = rsa.VerifyPSS(pubKey, crypto.SHA256, utils.HashSHA256(ticketFingerprint), signature, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -69,3 +69,7 @@ func (r *AttendantMongoDBRepository) FindAttendantByWalletAddr(wallerAddr string
 
 	return &foundAttendant
 }
+
+func (r *AttendantMongoDBRepository) AnyWithID(attendantID uuid.UUID) bool {
+	return r.FindAttendant(attendantID) != nil
+}
