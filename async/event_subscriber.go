@@ -11,10 +11,11 @@ const (
 )
 
 type eventDTO struct {
-	EventID      uuid.UUID `json:"event_id"`
-	OrganizerID  uuid.UUID `json:"organizer_id"`
-	PvtBCChannel string    `json:"pvt_bc_channel"`
-	PubBCAddress string    `json:"pub_bc_address"`
+	EventID        uuid.UUID `json:"event_id"`
+	OrganizerID    uuid.UUID `json:"organizer_id"`
+	PvtBCChannel   string    `json:"pvt_bc_channel"`
+	PubBCAddress   string    `json:"pub_bc_address"`
+	OrganizationID uuid.UUID `bson:"organization_id"`
 }
 
 type EventSubscriber struct {
@@ -33,7 +34,9 @@ func (s *EventSubscriber) NewEventHandler(rawEvent []byte) error {
 		return err
 	}
 
-	_, err = s.eventManager.AddEvent(dto.EventID, dto.OrganizerID, dto.PvtBCChannel, dto.PubBCAddress)
+	_, err = s.eventManager.AddEvent(
+		dto.EventID, dto.OrganizerID, dto.OrganizationID, dto.PvtBCChannel, dto.PubBCAddress,
+	)
 	if err != nil {
 		return err
 	}

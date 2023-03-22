@@ -10,6 +10,7 @@ type IProvider interface {
 	GetTicketSyncer() ITicketSyncer
 	GetEventManager() IEventManager
 	GetAttendantManager() IAttendantManager
+	GetValidatorManager() IValidatorManager
 }
 
 type ITicketScanner interface {
@@ -21,9 +22,13 @@ type ITicketSyncer interface {
 }
 
 type IEventManager interface {
-	AddEvent(eventID, organizerID uuid.UUID, pvtBCChannel, pubBCAddress string) (*models.Event, error)
+	AddEvent(eventID, organizerID, organizationID uuid.UUID, pvtBCChannel, pubBCAddress string) (*models.Event, error)
 }
 
 type IAttendantManager interface {
 	AddAttendant(attendantID uuid.UUID, walletAddress string, publicKey []byte) (*models.Attendant, error)
+}
+
+type IValidatorManager interface {
+	RegisterValidator(organizationID uuid.UUID, validatorJWT string) (*models.Validator, error)
 }

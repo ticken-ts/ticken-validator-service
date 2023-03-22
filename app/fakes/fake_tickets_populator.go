@@ -3,17 +3,20 @@ package fakes
 import (
 	"github.com/google/uuid"
 	"math/big"
+	"ticken-validator-service/config"
 	"ticken-validator-service/models"
 	"ticken-validator-service/repos"
 	"ticken-validator-service/utils"
 )
 
 type FakeTicketsPopulator struct {
+	devUserInfo   config.DevUser
 	reposProvider repos.IProvider
 }
 
-func NewFakeTicketsPopulator(reposProvider repos.IProvider) *FakeTicketsPopulator {
+func NewFakeTicketsPopulator(reposProvider repos.IProvider, devUserInfo config.DevUser) *FakeTicketsPopulator {
 	return &FakeTicketsPopulator{
+		devUserInfo:   devUserInfo,
 		reposProvider: reposProvider,
 	}
 }
@@ -51,12 +54,17 @@ func (populator *FakeTicketsPopulator) Populate() error {
 
 func (populator *FakeTicketsPopulator) createDevEventIfNotExists() (*models.Event, error) {
 	eventID := uuid.MustParse("60f14a0b-2270-4dd8-90de-752363a0def8")
+	organizationID, err := uuid.Parse(populator.devUserInfo.OrganizationID)
+	if err != nil {
+		return nil, err
+	}
 
 	devEvent := &models.Event{
-		EventID:      eventID,
-		OrganizerID:  uuid.New(),
-		PvtBCChannel: "pvtbc-fake-channel",
-		PubBCAddress: "pubbc-fake-address",
+		EventID:        eventID,
+		OrganizerID:    uuid.New(),
+		PvtBCChannel:   "pvtbc-fake-channel",
+		PubBCAddress:   "pubbc-fake-address",
+		OrganizationID: organizationID,
 	}
 
 	eventRepo := populator.reposProvider.GetEventRepository()

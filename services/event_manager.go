@@ -14,12 +14,13 @@ func NewEventManager(repoProvider repos.IProvider) *EventManager {
 	return &EventManager{eventRepo: repoProvider.GetEventRepository()}
 }
 
-func (eventManager *EventManager) AddEvent(eventID, organizerID uuid.UUID, pvtBCChannel, pubBCAddress string) (*models.Event, error) {
+func (eventManager *EventManager) AddEvent(eventID, organizerID, organizationID uuid.UUID, pvtBCChannel, pubBCAddress string) (*models.Event, error) {
 	event := &models.Event{
-		EventID:      eventID,
-		OrganizerID:  organizerID,
-		PvtBCChannel: pvtBCChannel,
-		PubBCAddress: pubBCAddress,
+		EventID:        eventID,
+		OrganizerID:    organizerID,
+		PvtBCChannel:   pvtBCChannel,
+		PubBCAddress:   pubBCAddress,
+		OrganizationID: organizationID,
 	}
 
 	if err := eventManager.eventRepo.AddEvent(event); err != nil {

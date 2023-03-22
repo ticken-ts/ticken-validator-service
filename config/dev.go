@@ -1,11 +1,12 @@
 package config
 
 type DevUser struct {
-	Email     string `mapstructure:"email"`
-	UserID    string `mapstructure:"user_id"`
-	Username  string `mapstructure:"username"`
-	Firstname string `mapstructure:"firstname"`
-	Lastname  string `mapstructure:"lastname"`
+	Email          string `mapstructure:"email"`
+	UserID         string `mapstructure:"user_id"`
+	Username       string `mapstructure:"username"`
+	Firstname      string `mapstructure:"firstname"`
+	Lastname       string `mapstructure:"lastname"`
+	OrganizationID string `mapstructure:"organization_id"`
 }
 
 type MockInfo struct {

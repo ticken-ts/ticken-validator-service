@@ -7,6 +7,7 @@ import (
 	"ticken-validator-service/api"
 	"ticken-validator-service/api/controllers/healthController"
 	"ticken-validator-service/api/controllers/scannerController"
+	"ticken-validator-service/api/controllers/validatorsController"
 	"ticken-validator-service/api/middlewares"
 	"ticken-validator-service/app/fakes"
 	"ticken-validator-service/async"
@@ -51,7 +52,7 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 
 	// this provider is going to provide all services
 	// needed by the controllers to execute it operations
-	serviceProvider, err := services.NewProvider(repoProvider, pvtbcCaller, pubbcCaller)
+	serviceProvider, err := services.NewProvider(repoProvider, infraBuilder, pvtbcCaller, pubbcCaller)
 	if err != nil {
 		panic(err)
 	}
@@ -78,6 +79,7 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 	var appControllers = []api.Controller{
 		healthController.New(serviceProvider),
 		scannerController.New(serviceProvider),
+		validatorsController.New(serviceProvider),
 	}
 
 	apiRouter := engine.Group(tickenConfig.Server.APIPrefix)
@@ -92,7 +94,7 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 
 	var appPopulators = []Populator{
 		fakes.NewFakeUsersPopulator(repoProvider, tickenConfig.Dev.User),
-		fakes.NewFakeTicketsPopulator(repoProvider),
+		fakes.NewFakeTicketsPopulator(repoProvider, tickenConfig.Dev.User),
 	}
 	ticketValidatorApp.populators = appPopulators
 

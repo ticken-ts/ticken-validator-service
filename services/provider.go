@@ -3,6 +3,7 @@ package services
 import (
 	pubbc "github.com/ticken-ts/ticken-pubbc-connector"
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
+	"ticken-validator-service/infra"
 	"ticken-validator-service/repos"
 )
 
@@ -11,11 +12,13 @@ type Provider struct {
 	TicketScanner    ITicketScanner
 	TicketSyncer     ITicketSyncer
 	EventManager     IEventManager
+	ValidatorManager IValidatorManager
 }
 
-func NewProvider(repoProvider repos.IProvider, pvtbcCaller *pvtbc.Caller, pubbcCaller pubbc.Caller) (IProvider, error) {
+func NewProvider(repoProvider repos.IProvider, builder infra.IBuilder, pvtbcCaller *pvtbc.Caller, pubbcCaller pubbc.Caller) (IProvider, error) {
 	provider := new(Provider)
 
+	provider.ValidatorManager = NewValidatorManager(repoProvider, builder.BuildJWTVerifier())
 	provider.TicketSyncer = NewTicketSyncer(pvtbcCaller, pubbcCaller, repoProvider)
 	provider.AttendantManager = NewAttendantManager(repoProvider)
 	provider.TicketScanner = NewTicketScanner(repoProvider)
@@ -38,4 +41,8 @@ func (provider *Provider) GetEventManager() IEventManager {
 
 func (provider *Provider) GetAttendantManager() IAttendantManager {
 	return provider.AttendantManager
+}
+
+func (provider *Provider) GetValidatorManager() IValidatorManager {
+	return provider.ValidatorManager
 }
