@@ -2,8 +2,8 @@ package hsm_test
 
 import (
 	"testing"
-	"ticken-event-service/infra/hsm"
-	"ticken-event-service/utils"
+	"ticken-validator-service/infra/hsm"
+	"ticken-validator-service/utils"
 )
 
 const testEncryptionKey = "@NcRfUjXnZr4u7x!A%D*G-KaPdSgVkYp"
