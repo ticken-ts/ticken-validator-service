@@ -15,6 +15,7 @@ require (
 	github.com/ticken-ts/ticken-pubbc-connector v0.0.10
 	github.com/ticken-ts/ticken-pvtbc-connector v0.2.46
 	go.mongodb.org/mongo-driver v1.10.3
+	github.com/pquerna/otp v1.4.0
 )
 
 require (
@@ -52,7 +53,6 @@ require (
 	github.com/pelletier/go-toml/v2 v2.0.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pquerna/cachecontrol v0.1.0 // indirect
-	github.com/pquerna/otp v1.4.0 // indirect
 	github.com/rjeczalik/notify v0.9.1 // indirect
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/spf13/afero v1.9.2 // indirect
