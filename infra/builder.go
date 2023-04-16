@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	pubbc "github.com/ticken-ts/ticken-pubbc-connector"
 	ethconnector "github.com/ticken-ts/ticken-pubbc-connector/eth-connector"
+	"path"
 
 	ethnode "github.com/ticken-ts/ticken-pubbc-connector/eth-connector/node"
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
@@ -236,10 +237,18 @@ func buildPeerConnector(config config.PvtbcConfig, devConfig config.DevConfig) p
 	if env.TickenEnv.IsDev() && !devConfig.Mock.DisablePVTBCMock {
 		pc = peerconnector.NewDev(config.MspID, "admin")
 	} else {
-		pc = peerconnector.New(config.MspID, config.CertificatePath, config.PrivateKeyPath)
+		pc = peerconnector.New(
+			config.MspID,
+			path.Join(config.ClusterStoragePath, config.CertificatePath),
+			path.Join(config.ClusterStoragePath, config.PrivateKeyPath),
+		)
 	}
 
-	err := pc.Connect(config.PeerEndpoint, config.GatewayPeer, config.TLSCertificatePath)
+	err := pc.Connect(
+		config.PeerEndpoint,
+		config.GatewayPeer,
+		path.Join(config.ClusterStoragePath, config.TLSCertificatePath),
+	)
 	if err != nil {
 		panic(err)
 	}

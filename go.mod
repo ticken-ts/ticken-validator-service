@@ -4,11 +4,13 @@ go 1.20
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
+	github.com/fatih/color v1.13.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.1
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.2.0
 	github.com/joho/godotenv v1.4.0
+	github.com/pquerna/otp v1.4.0
 	github.com/rabbitmq/amqp091-go v1.5.0
 	github.com/rs/zerolog v1.28.0
 	github.com/spf13/viper v1.13.0
