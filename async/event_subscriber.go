@@ -15,7 +15,7 @@ type eventDTO struct {
 	OrganizerID    uuid.UUID `json:"organizer_id"`
 	PvtBCChannel   string    `json:"pvt_bc_channel"`
 	PubBCAddress   string    `json:"pub_bc_address"`
-	OrganizationID uuid.UUID `bson:"organization_id"`
+	OrganizationID uuid.UUID `json:"organization_id"`
 }
 
 type EventSubscriber struct {

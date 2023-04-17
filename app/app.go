@@ -8,9 +8,9 @@ import (
 	"ticken-validator-service/api"
 	"ticken-validator-service/api/controllers/healthController"
 	"ticken-validator-service/api/controllers/scannerController"
+	"ticken-validator-service/api/controllers/syncController"
 	"ticken-validator-service/api/controllers/validatorsController"
 	"ticken-validator-service/api/middlewares"
-	"ticken-validator-service/app/fakes"
 	"ticken-validator-service/async"
 	"ticken-validator-service/config"
 	"ticken-validator-service/env"
@@ -90,8 +90,8 @@ func New(infraBuilder *infra.Builder, tickenConfig *config.Config) *TickenValida
 
 	/********************************* populators **********************************/
 	ticketValidatorApp.populators = []Populator{
-		fakes.NewFakeUsersPopulator(repoProvider, tickenConfig.Dev.User),
-		fakes.NewFakeTicketsPopulator(repoProvider, tickenConfig.Dev.User),
+		//fakes.NewFakeUsersPopulator(repoProvider, tickenConfig.Dev.User),
+		//fakes.NewFakeTicketsPopulator(repoProvider, tickenConfig.Dev.User),
 	}
 	/*******************************************************************************/
 
@@ -144,6 +144,7 @@ func (tickenValidatorApp *TickenValidatorApp) loadControllers(apiRouter gin.IRou
 	apiRouterGroup := apiRouter.Group(tickenValidatorApp.config.Server.APIPrefix)
 
 	var appControllers = []api.Controller{
+		syncController.New(tickenValidatorApp.serviceProvider),
 		healthController.New(tickenValidatorApp.serviceProvider),
 		scannerController.New(tickenValidatorApp.serviceProvider),
 		validatorsController.New(tickenValidatorApp.serviceProvider),

@@ -47,6 +47,8 @@ func (syncer *TicketSyncer) Sync(eventID uuid.UUID, callerID uuid.UUID) error {
 		return err
 	}
 
+	// todo -> check status event
+
 	go syncer.sync(event, pvtbcEvent)
 	return nil
 }
@@ -84,7 +86,7 @@ func (syncer *TicketSyncer) syncTicket(pubbcAddr string, pvtbcTicket *chain_mode
 		return nil, err
 	}
 
-	attendant := syncer.attendantRepo.FindAttendantByWalletAddr(pubbcTicket.OwnerAddr)
+	attendant := syncer.attendantRepo.FindAttendantByWalletAddr(pubbcTicket.Owner)
 	if attendant == nil {
 		return nil, fmt.Errorf("attendant not found")
 	}
@@ -96,7 +98,7 @@ func (syncer *TicketSyncer) syncTicket(pubbcAddr string, pvtbcTicket *chain_mode
 		TokenID:      tokenID,
 		ContractAddr: pvtbcTicket.ContractAddr,
 
-		AttendantWalletAddr: pubbcTicket.OwnerAddr,
+		AttendantWalletAddr: pubbcTicket.Owner,
 		AttendantID:         attendant.AttendantID,
 	}
 
