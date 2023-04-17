@@ -14,11 +14,11 @@ func NewAttendantManager(repoProvider repos.IProvider) *AttendantManager {
 	return &AttendantManager{attendantRepo: repoProvider.GetAttendantRepository()}
 }
 
-func (attendantManager *AttendantManager) AddAttendant(attendantID uuid.UUID, walletAddress string, publicKey []byte) (*models.Attendant, error) {
+func (attendantManager *AttendantManager) AddAttendant(attendantID uuid.UUID, walletAddress string, pemPublicKey string) (*models.Attendant, error) {
 	attendant := &models.Attendant{
 		AttendantID:   attendantID,
 		WalletAddress: walletAddress,
-		PublicKey:     publicKey,
+		PemPublicKey:  pemPublicKey,
 	}
 
 	if err := attendantManager.attendantRepo.AddAttendant(attendant); err != nil {

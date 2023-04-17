@@ -50,8 +50,10 @@ func (processor *Subscriber) handler(rawmsg []byte) {
 	switch msg.Type {
 	case NewEventMessageType:
 		processingError = processor.eventProcessor.NewEventHandler(msg.Data)
+		break
 	case NewAttendantMessageType:
 		processingError = processor.attendantProcessor.NewAttendantHandler(msg.Data)
+		break
 
 	default:
 		processingError = fmt.Errorf("message type %s not supportaed\n", msg.Type)

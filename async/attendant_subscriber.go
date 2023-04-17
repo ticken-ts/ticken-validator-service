@@ -3,6 +3,7 @@ package async
 import (
 	"encoding/json"
 	"github.com/google/uuid"
+	"ticken-validator-service/log"
 	"ticken-validator-service/services"
 )
 
@@ -11,9 +12,9 @@ const (
 )
 
 type attendantDTO struct {
-	AttendantID   uuid.UUID `json:"event_id"`
+	AttendantID   uuid.UUID `json:"attendant_id"`
 	WalletAddress string    `json:"wallet_address"`
-	PublicKey     []byte    `json:"public_key"`
+	PublicKey     string    `json:"public_key"`
 }
 
 type AttendantSubscriber struct {
@@ -26,6 +27,8 @@ func NewAttendantSubscriber(attendantManager services.IAttendantManager) *Attend
 
 func (s *AttendantSubscriber) NewAttendantHandler(rawAttendant []byte) error {
 	dto := new(attendantDTO)
+
+	log.TickenLogger.Info().Msg("loading attendant")
 
 	err := json.Unmarshal(rawAttendant, dto)
 	if err != nil {
