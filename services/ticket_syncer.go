@@ -67,26 +67,29 @@ func (syncer *TicketSyncer) sync(event *models.Event, pvtbcEvent *chain_models.E
 	for _, section := range pvtbcEvent.Sections {
 		pvtbcTickets, err := syncer.pvtbcCaller.GetSectionTickets(event.EventID, section.Name)
 		if err != nil {
-			log.TickenLogger.Error().Msg(err.Error()) // todo -> handle better
+			syncer.revertSyncingStatus(event, err)
+			return
 		}
 
 		var tickets []*models.Ticket
 		for _, pvtbcTicket := range pvtbcTickets {
 			syncedTicket, err := syncer.syncTicket(event.PubBCAddress, pvtbcTicket)
 			if err != nil {
-				panic(err)
+				syncer.revertSyncingStatus(event, err)
+				return
 			}
 			tickets = append(tickets, syncedTicket)
 		}
 
 		if err := syncer.ticketRepo.AddManyTickets(tickets); err != nil {
-			panic(err)
+			syncer.revertSyncingStatus(event, err)
+			return
 		}
 	}
 
 	event.SyncStatus = models.EventSynced
 	if err := syncer.eventRepo.UpdateSyncStatus(event); err != nil {
-		log.TickenLogger.Error().Msg(err.Error())
+		log.TickenLogger.Error().Msg("failed to update status to synced")
 	}
 }
 
@@ -130,4 +133,10 @@ func (syncer *TicketSyncer) getPvtbcEvent(channel string, eventID uuid.UUID) (*c
 	}
 
 	return pvtbcEvent, nil
+}
+
+func (syncer *TicketSyncer) revertSyncingStatus(event *models.Event, err error) {
+	event.SyncStatus = models.EventDesynced
+	_ = syncer.eventRepo.UpdateSyncStatus(event)
+	log.TickenLogger.Error().Msg(err.Error())
 }
