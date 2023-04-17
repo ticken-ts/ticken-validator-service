@@ -47,7 +47,17 @@ func (syncer *TicketSyncer) Sync(eventID uuid.UUID, callerID uuid.UUID) error {
 		return err
 	}
 
-	// todo -> check status event
+	if event.SyncStatus == models.EventSyncing {
+		return fmt.Errorf("event is already syncing")
+	}
+	if event.SyncStatus == models.EventSynced {
+		return fmt.Errorf("event is already synced")
+	}
+
+	event.SyncStatus = models.EventSyncing
+	if err = syncer.eventRepo.UpdateSyncStatus(event); err != nil {
+		return fmt.Errorf("failed to start event syncing")
+	}
 
 	go syncer.sync(event, pvtbcEvent)
 	return nil
@@ -57,7 +67,7 @@ func (syncer *TicketSyncer) sync(event *models.Event, pvtbcEvent *chain_models.E
 	for _, section := range pvtbcEvent.Sections {
 		pvtbcTickets, err := syncer.pvtbcCaller.GetSectionTickets(event.EventID, section.Name)
 		if err != nil {
-			log.TickenLogger.Err(err) // todo -> handle better
+			log.TickenLogger.Error().Msg(err.Error()) // todo -> handle better
 		}
 
 		var tickets []*models.Ticket
@@ -72,6 +82,11 @@ func (syncer *TicketSyncer) sync(event *models.Event, pvtbcEvent *chain_models.E
 		if err := syncer.ticketRepo.AddManyTickets(tickets); err != nil {
 			panic(err)
 		}
+	}
+
+	event.SyncStatus = models.EventSynced
+	if err := syncer.eventRepo.UpdateSyncStatus(event); err != nil {
+		log.TickenLogger.Error().Msg(err.Error())
 	}
 }
 

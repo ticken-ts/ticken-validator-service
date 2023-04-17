@@ -56,3 +56,19 @@ func (r *EventMongoDBRepository) FindEvent(eventID uuid.UUID) *models.Event {
 func (r *EventMongoDBRepository) AnyWithID(eventID uuid.UUID) bool {
 	return r.FindEvent(eventID) != nil
 }
+
+func (r *EventMongoDBRepository) UpdateSyncStatus(event *models.Event) error {
+	updateContext, cancel := r.generateOpSubcontext()
+	defer cancel()
+
+	events := r.getCollection()
+	filter := bson.M{"event_id": event.EventID}
+	update := bson.M{"$set": bson.M{"sync_status": event.SyncStatus}}
+
+	_, err := events.UpdateOne(updateContext, filter, update)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

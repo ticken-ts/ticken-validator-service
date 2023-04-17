@@ -9,6 +9,7 @@ type IEventRepository interface {
 	AnyWithID(eventID uuid.UUID) bool
 	AddEvent(event *models.Event) error
 	FindEvent(eventID uuid.UUID) *models.Event
+	UpdateSyncStatus(event *models.Event) error
 }
 
 type ITicketRepository interface {

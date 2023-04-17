@@ -21,6 +21,7 @@ func (eventManager *EventManager) AddEvent(eventID, organizerID, organizationID 
 		PvtBCChannel:   pvtBCChannel,
 		PubBCAddress:   pubBCAddress,
 		OrganizationID: organizationID,
+		SyncStatus:     models.EventDesynced,
 	}
 
 	if err := eventManager.eventRepo.AddEvent(event); err != nil {
