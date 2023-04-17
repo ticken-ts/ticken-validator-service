@@ -5,7 +5,7 @@ import (
 	"github.com/google/uuid"
 	pubbc "github.com/ticken-ts/ticken-pubbc-connector"
 	pvtbc "github.com/ticken-ts/ticken-pvtbc-connector"
-	chain_models "github.com/ticken-ts/ticken-pvtbc-connector/chain-models"
+	chainmodels "github.com/ticken-ts/ticken-pvtbc-connector/chain-models"
 	"math/big"
 	"ticken-validator-service/log"
 	"ticken-validator-service/models"
@@ -63,7 +63,7 @@ func (syncer *TicketSyncer) Sync(eventID uuid.UUID, callerID uuid.UUID) error {
 	return nil
 }
 
-func (syncer *TicketSyncer) sync(event *models.Event, pvtbcEvent *chain_models.Event) {
+func (syncer *TicketSyncer) sync(event *models.Event, pvtbcEvent *chainmodels.Event) {
 	for _, section := range pvtbcEvent.Sections {
 		pvtbcTickets, err := syncer.pvtbcCaller.GetSectionTickets(event.EventID, section.Name)
 		if err != nil {
@@ -93,7 +93,7 @@ func (syncer *TicketSyncer) sync(event *models.Event, pvtbcEvent *chain_models.E
 	}
 }
 
-func (syncer *TicketSyncer) syncTicket(pubbcAddr string, pvtbcTicket *chain_models.Ticket) (*models.Ticket, error) {
+func (syncer *TicketSyncer) syncTicket(pubbcAddr string, pvtbcTicket *chainmodels.Ticket) (*models.Ticket, error) {
 	tokenID, ok := big.NewInt(0).SetString(pvtbcTicket.TokenID, 16)
 	if !ok {
 		return nil, fmt.Errorf("failed to obtain token ID")
@@ -123,7 +123,7 @@ func (syncer *TicketSyncer) syncTicket(pubbcAddr string, pvtbcTicket *chain_mode
 	return ticket, nil
 }
 
-func (syncer *TicketSyncer) getPvtbcEvent(channel string, eventID uuid.UUID) (*chain_models.Event, error) {
+func (syncer *TicketSyncer) getPvtbcEvent(channel string, eventID uuid.UUID) (*chainmodels.Event, error) {
 	if err := syncer.pvtbcCaller.SetChannel(channel); err != nil {
 		return nil, err
 	}
