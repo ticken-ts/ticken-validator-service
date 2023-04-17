@@ -14,7 +14,7 @@ type IProvider interface {
 }
 
 type ITicketScanner interface {
-	Scan(eventID, ticketID uuid.UUID, signature []byte, validatorID uuid.UUID) (*models.Ticket, error)
+	Scan(eventID, ticketID uuid.UUID, validatorID uuid.UUID, rSignatureField, sSignatureField string) (*models.Ticket, error)
 }
 
 type ITicketSyncer interface {
@@ -26,7 +26,7 @@ type IEventManager interface {
 }
 
 type IAttendantManager interface {
-	AddAttendant(attendantID uuid.UUID, walletAddress string, publicKey []byte) (*models.Attendant, error)
+	AddAttendant(attendantID uuid.UUID, walletAddress string, pemPublicKey string) (*models.Attendant, error)
 }
 
 type IValidatorManager interface {

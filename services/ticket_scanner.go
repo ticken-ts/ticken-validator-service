@@ -1,12 +1,12 @@
 package services
 
 import (
-	"crypto"
-	"crypto/rsa"
-	"crypto/x509"
+	"crypto/ecdsa"
 	"encoding/pem"
 	"fmt"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
+	"math/big"
 	"ticken-validator-service/models"
 	"ticken-validator-service/repos"
 	"ticken-validator-service/utils"
@@ -26,13 +26,13 @@ func NewTicketScanner(repoProvider repos.IProvider) *TicketScanner {
 	}
 }
 
-func (s *TicketScanner) Scan(eventID, ticketID uuid.UUID, signature []byte, validatorID uuid.UUID) (*models.Ticket, error) {
-	ticket := s.ticketRepo.FindTicket(eventID, ticketID)
+func (scanner *TicketScanner) Scan(eventID, ticketID, validatorID uuid.UUID, rSignatureField, sSignatureField string) (*models.Ticket, error) {
+	ticket := scanner.ticketRepo.FindTicket(eventID, ticketID)
 	if ticket == nil {
 		return nil, fmt.Errorf("ticket not found")
 	}
 
-	ticketOwner := s.attendantRepo.FindAttendant(ticket.AttendantID)
+	ticketOwner := scanner.attendantRepo.FindAttendant(ticket.AttendantID)
 	if ticketOwner == nil {
 		return nil, fmt.Errorf("attendant not found")
 	}
@@ -41,39 +41,46 @@ func (s *TicketScanner) Scan(eventID, ticketID uuid.UUID, signature []byte, vali
 		return nil, err
 	}
 
-	if err := s.validateSignature(ticketOwner.PublicKey, signature, ticket); err != nil {
+	publicKey, err := parsePublicKey(ticketOwner.PemPublicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := scanner.validateSignature(publicKey, rSignatureField, sSignatureField, ticket); err != nil {
 		return nil, fmt.Errorf("ticket signature is not valid")
 	}
 
-	if ticket := s.ticketRepo.UpdateTicketScanData(ticket); ticket == nil {
+	if ticket := scanner.ticketRepo.UpdateTicketScanData(ticket); ticket == nil {
 		return nil, fmt.Errorf("failed to update ticket scan data")
 	}
 
 	return ticket, nil
 }
 
-func (s *TicketScanner) validateSignature(publicKey []byte, signature []byte, ticket *models.Ticket) error {
+func (scanner *TicketScanner) validateSignature(publicKey *ecdsa.PublicKey, rSignatureField, sSignatureField string, ticket *models.Ticket) error {
 	ticketFingerprint := ticket.GetTicketFingerprint()
 
-	block, _ := pem.Decode(publicKey)
-	if block == nil {
-		return fmt.Errorf("failed to decode public key")
-	}
-
-	pub, err := x509.ParsePKIXPublicKey(block.Bytes)
-	if err != nil {
-		return err
-	}
-
-	pubKey, ok := pub.(*rsa.PublicKey)
+	r, ok := big.NewInt(0).SetString(rSignatureField, 16)
 	if !ok {
-		return fmt.Errorf("failed to decode public key")
+		return fmt.Errorf("failed to read R signature filed")
+	}
+	s, ok := big.NewInt(0).SetString(sSignatureField, 16)
+	if !ok {
+		return fmt.Errorf("failed to read S signature filed")
 	}
 
-	err = rsa.VerifyPSS(pubKey, crypto.SHA256, utils.HashSHA256(ticketFingerprint), signature, nil)
-	if err != nil {
-		return err
+	if ok := ecdsa.Verify(publicKey, utils.HashSHA256(ticketFingerprint), r, s); !ok {
+		return fmt.Errorf("signature verification failed")
 	}
 
 	return nil
+}
+
+func parsePublicKey(pemEncodedPublicKey string) (*ecdsa.PublicKey, error) {
+	pemPublicKey, _ := pem.Decode([]byte(pemEncodedPublicKey))
+	pubKey, err := crypto.UnmarshalPubkey(pemPublicKey.Bytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode pem public key: %s", err.Error())
+	}
+	return pubKey, nil
 }

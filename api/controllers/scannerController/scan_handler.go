@@ -1,7 +1,6 @@
 package scannerController
 
 import (
-	"encoding/base64"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"net/http"
@@ -10,10 +9,15 @@ import (
 	"ticken-validator-service/utils"
 )
 
+type scanTicketPayload struct {
+	RSignatureField string `json:"r"`
+	SSignatureField string `json:"s"`
+}
+
 func (controller *ScannerController) Scan(c *gin.Context) {
 	validatorID := c.MustGet("jwt").(*jwt.Token).Subject
 
-	b64signature := c.Query("signature")
+	var payload scanTicketPayload
 
 	eventID, err := uuid.Parse(c.Param("eventID"))
 	if err != nil {
@@ -29,16 +33,20 @@ func (controller *ScannerController) Scan(c *gin.Context) {
 		return
 	}
 
-	signature, err := base64.URLEncoding.DecodeString(b64signature)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, utils.HttpResponse{Message: err.Error()})
+	if err = c.BindJSON(&payload); err != nil {
 		c.Abort()
 		return
 	}
 
 	ticketScanner := controller.serviceProvider.GetTicketScanner()
 
-	ticketScanned, err := ticketScanner.Scan(eventID, ticketID, signature, validatorID)
+	ticketScanned, err := ticketScanner.Scan(
+		eventID,
+		ticketID,
+		validatorID,
+		payload.RSignatureField,
+		payload.SSignatureField,
+	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, utils.HttpResponse{Message: err.Error()})
 		c.Abort()
