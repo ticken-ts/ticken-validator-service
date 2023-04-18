@@ -1,12 +1,12 @@
 package models
 
 import (
-	"encoding/base64"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/pquerna/otp"
 	"github.com/pquerna/otp/totp"
 	"math/big"
+	"ticken-validator-service/env"
 	"ticken-validator-service/utils"
 	"time"
 )
@@ -33,10 +33,9 @@ type Ticket struct {
 	/*******************************************/
 }
 
-func (ticket *Ticket) GetTicketFingerprint() string {
+func (ticket *Ticket) GetTicketFingerprint() []byte {
 	ticketFingerprintData := ticket.ContractAddr + "/" + ticket.TokenID.Text(16) + "/" + ticket.getTOTPToken()
-	hash := utils.HashSHA256(ticketFingerprintData)
-	return base64.URLEncoding.EncodeToString(hash)
+	return utils.HashSHA256(ticketFingerprintData)
 }
 
 func (ticket *Ticket) Scan(validatorID uuid.UUID) error {
@@ -49,9 +48,8 @@ func (ticket *Ticket) Scan(validatorID uuid.UUID) error {
 }
 
 func (ticket *Ticket) getTOTPToken() string {
-	const secret = "ticken.demo.secret" // todo -> this is only during develpment
-	token, _ := totp.GenerateCodeCustom(secret, time.Now(), totp.ValidateOpts{
-		Period:    60,
+	token, _ := totp.GenerateCodeCustom(env.TickenEnv.TOPTSecret, time.Now(), totp.ValidateOpts{
+		Period:    60 * 30,
 		Algorithm: otp.AlgorithmSHA512,
 		Digits:    8,
 	})

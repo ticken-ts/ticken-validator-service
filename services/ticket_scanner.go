@@ -9,7 +9,6 @@ import (
 	"math/big"
 	"ticken-validator-service/models"
 	"ticken-validator-service/repos"
-	"ticken-validator-service/utils"
 )
 
 type TicketScanner struct {
@@ -69,7 +68,13 @@ func (scanner *TicketScanner) validateSignature(publicKey *ecdsa.PublicKey, rSig
 		return fmt.Errorf("failed to read S signature filed")
 	}
 
-	if ok := ecdsa.Verify(publicKey, utils.HashSHA256(ticketFingerprint), r, s); !ok {
+	signature := make([]byte, 0)
+	signature = append(signature, r.Bytes()...)
+	signature = append(signature, s.Bytes()...)
+
+	pubKey := crypto.CompressPubkey(publicKey)
+
+	if ok := crypto.VerifySignature(pubKey, ticketFingerprint, signature); !ok {
 		return fmt.Errorf("signature verification failed")
 	}
 

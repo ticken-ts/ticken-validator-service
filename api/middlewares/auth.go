@@ -31,7 +31,8 @@ func (middleware *AuthMiddleware) Setup(router gin.IRouter) {
 
 func (middleware *AuthMiddleware) isFreeURI(uri string) bool {
 	uri = strings.Replace(uri, middleware.apiPrefix, "", 1)
-	return uri == "/healthz"
+	// TODO -> remove after presentation (should be private)
+	return uri == "/healthz" || strings.Contains(uri, "/sync") || strings.Contains(uri, "/scan")
 }
 
 func (middleware *AuthMiddleware) isJWTAuthorized() gin.HandlerFunc {

@@ -114,7 +114,7 @@ func (syncer *TicketSyncer) syncTicket(pubbcAddr string, pvtbcTicket *chainmodel
 		EventID:  pvtbcTicket.EventID,
 
 		TokenID:      tokenID,
-		ContractAddr: pvtbcTicket.ContractAddr,
+		ContractAddr: pubbcAddr,
 
 		AttendantWalletAddr: pubbcTicket.Owner,
 		AttendantID:         attendant.AttendantID,

@@ -5,7 +5,6 @@ import (
 	"github.com/google/uuid"
 	"net/http"
 	"ticken-validator-service/api/mappers"
-	"ticken-validator-service/security/jwt"
 	"ticken-validator-service/utils"
 )
 
@@ -15,7 +14,7 @@ type scanTicketPayload struct {
 }
 
 func (controller *ScannerController) Scan(c *gin.Context) {
-	validatorID := c.MustGet("jwt").(*jwt.Token).Subject
+	//validatorID := c.MustGet("jwt").(*jwt.Token).Subject
 
 	var payload scanTicketPayload
 
@@ -43,7 +42,7 @@ func (controller *ScannerController) Scan(c *gin.Context) {
 	ticketScanned, err := ticketScanner.Scan(
 		eventID,
 		ticketID,
-		validatorID,
+		uuid.New(), //validatorID,
 		payload.RSignatureField,
 		payload.SSignatureField,
 	)
