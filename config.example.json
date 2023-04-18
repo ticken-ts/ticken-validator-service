@@ -1,15 +1,15 @@
 {
   "server": {
-    "host": "localhost",
+    "host": "0.0.0.0",
     "port": 7000,
     "api_prefix": "/api/v",
-    "client_id": "ticken.event.service",
-    "identity_issuer": "http://localhost:8080/realms/organizers"
+    "client_id": "ticken.validator.service",
+    "identity_issuer": "http://localhost:8080/realms/validators"
   },
 
   "database": {
     "driver": "mongo",
-    "name": "ticken-event-svc-db"
+    "name": "ticken-validato-svc-db"
   },
 
   "bus": {
@@ -20,12 +20,13 @@
   },
 
   "pvtbc": {
+    "cluster_storage_path": "/tmp/ticken/pvtbc-pv",
     "msp_id": "tickenMSP",
     "peer_endpoint": "ticken-peer0.localho.st:443",
     "gateway_peer": "ticken-peer0.localho.st",
-    "certificate_path": "/tmp/ticken-pv/orgs/peer-orgs/ticken/users/ticken-admin/msp/signcerts/cert.pem",
-    "private_key_path": "/tmp/ticken-pv/orgs/peer-orgs/ticken/users/ticken-admin/msp/keystore/priv.pem",
-    "tls_certificate_path": "/tmp/ticken-pv/orgs/peer-orgs/ticken/nodes/ticken-peer0/tls/signcerts/tls-cert.pem"
+    "certificate_path": "/orgs/peer-orgs/ticken/users/ticken-admin/msp/signcerts/cert.pem",
+    "private_key_path": "/orgs/peer-orgs/ticken/users/ticken-admin/msp/keystore/priv.pem",
+    "tls_certificate_path": "/orgs/peer-orgs/ticken/nodes/ticken-peer0/tls/signcerts/tls-cert.pem"
   },
 
   "pubbc": {
@@ -35,7 +36,7 @@
   "dev": {
     "mock": {
       "disable_pvtbc_mock": false,
-      "disable_bus_mock": false,
+      "disable_bus_mock": true,
       "disable_auth_mock": true
     },
 
