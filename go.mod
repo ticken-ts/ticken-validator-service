@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/coreos/go-oidc v2.2.1+incompatible
+	github.com/ethereum/go-ethereum v1.10.26
 	github.com/fatih/color v1.13.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-playground/validator/v10 v10.11.1
@@ -17,7 +18,6 @@ require (
 	github.com/ticken-ts/ticken-pubbc-connector v0.0.44
 	github.com/ticken-ts/ticken-pvtbc-connector v0.2.49
 	go.mongodb.org/mongo-driver v1.10.3
-	github.com/ethereum/go-ethereum v1.10.26
 )
 
 require (
@@ -27,6 +27,7 @@ require (
 	github.com/deckarep/golang-set v1.8.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
+	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-ole/go-ole v1.2.1 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect

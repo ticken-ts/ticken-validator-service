@@ -31,4 +31,5 @@ type IAttendantManager interface {
 
 type IValidatorManager interface {
 	RegisterValidator(organizationID uuid.UUID, validatorJWT string) (*models.Validator, error)
+	GetValidators(organizationID uuid.UUID) ([]*models.Validator, error)
 }

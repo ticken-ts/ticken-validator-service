@@ -1,8 +1,9 @@
 package repos
 
 import (
-	"github.com/google/uuid"
 	"ticken-validator-service/models"
+
+	"github.com/google/uuid"
 )
 
 type IEventRepository interface {
@@ -31,6 +32,7 @@ type IValidatorRepository interface {
 	AddValidator(validator *models.Validator) error
 	FindValidator(validatorID uuid.UUID) *models.Validator
 	FindValidatorByUsername(username string) *models.Validator
+	FindValidatorsByOrganizationID(organizationID uuid.UUID) ([]*models.Validator, error)
 }
 
 type IProvider interface {

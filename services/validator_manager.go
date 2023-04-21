@@ -41,3 +41,7 @@ func (manager *ValidatorManager) RegisterValidator(organizationID uuid.UUID, val
 
 	return newValidator, nil
 }
+
+func (manager *ValidatorManager) GetValidators(organizationID uuid.UUID) ([]*models.Validator, error) {
+	return manager.validatorRepo.FindValidatorsByOrganizationID(organizationID)
+}

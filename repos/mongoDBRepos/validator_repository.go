@@ -1,11 +1,12 @@
 package mongoDBRepos
 
 import (
+	"ticken-validator-service/models"
+
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"ticken-validator-service/models"
 )
 
 const ValidatorCollectionName = "validators"
@@ -88,4 +89,23 @@ func (r *ValidatorMongoDBRepository) FindValidatorByUsername(username string) *m
 
 func (r *ValidatorMongoDBRepository) AnyWithID(validatorID uuid.UUID) bool {
 	return r.FindValidator(validatorID) != nil
+}
+
+func (r *ValidatorMongoDBRepository) FindValidatorsByOrganizationID(organizationID uuid.UUID) ([]*models.Validator, error) {
+	findContext, cancel := r.generateOpSubcontext()
+	defer cancel()
+
+	validators := r.getCollection()
+	cursor, err := validators.Find(findContext, bson.M{"organization_id": organizationID})
+	if err != nil {
+		return nil, err
+	}
+
+	var foundValidators []*models.Validator
+	err = cursor.All(findContext, &foundValidators)
+	if err != nil {
+		return nil, err
+	}
+
+	return foundValidators, nil
 }

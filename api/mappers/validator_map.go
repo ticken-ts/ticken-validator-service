@@ -13,3 +13,13 @@ func MapValidatorToDTO(validator *models.Validator) *dto.ValidatorDTO {
 		Email:          validator.Email,
 	}
 }
+
+func MapValidatorsToDTOs(validators []*models.Validator) []*dto.ValidatorDTO {
+	var validatorDTOs []*dto.ValidatorDTO = make([]*dto.ValidatorDTO, 0, len(validators))
+
+	for _, validator := range validators {
+		validatorDTOs = append(validatorDTOs, MapValidatorToDTO(validator))
+	}
+
+	return validatorDTOs
+}

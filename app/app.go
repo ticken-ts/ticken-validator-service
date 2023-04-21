@@ -2,9 +2,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/gin-gonic/gin"
-	gojwt "github.com/golang-jwt/jwt"
 	"ticken-validator-service/api"
 	"ticken-validator-service/api/controllers/healthController"
 	"ticken-validator-service/api/controllers/scannerController"
@@ -20,6 +17,10 @@ import (
 	"ticken-validator-service/security/jwt"
 	"ticken-validator-service/services"
 	"ticken-validator-service/utils"
+
+	"github.com/fatih/color"
+	"github.com/gin-gonic/gin"
+	gojwt "github.com/golang-jwt/jwt"
 )
 
 type TickenValidatorApp struct {
@@ -157,6 +158,7 @@ func (tickenValidatorApp *TickenValidatorApp) loadControllers(apiRouter gin.IRou
 
 func (tickenValidatorApp *TickenValidatorApp) loadMiddlewares(apiRouter gin.IRouter) {
 	var appMiddlewares = []api.Middleware{
+		middlewares.NewCorsMiddleware(),
 		middlewares.NewErrorMiddleware(),
 		middlewares.NewAuthMiddleware(tickenValidatorApp.jwtVerifier, tickenValidatorApp.config.Server.APIPrefix),
 	}

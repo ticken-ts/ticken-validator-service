@@ -1,12 +1,13 @@
 package middlewares
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strings"
 	"ticken-validator-service/security/jwt"
 	"ticken-validator-service/utils"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type AuthMiddleware struct {
@@ -32,7 +33,7 @@ func (middleware *AuthMiddleware) Setup(router gin.IRouter) {
 func (middleware *AuthMiddleware) isFreeURI(uri string) bool {
 	uri = strings.Replace(uri, middleware.apiPrefix, "", 1)
 	// TODO -> remove after presentation (should be private)
-	return uri == "/healthz" || strings.Contains(uri, "/sync") || strings.Contains(uri, "/scan")
+	return uri == "/healthz" || strings.Contains(uri, "/sync") || strings.Contains(uri, "/scan") || strings.Contains(uri, "/validators")
 }
 
 func (middleware *AuthMiddleware) isJWTAuthorized() gin.HandlerFunc {
