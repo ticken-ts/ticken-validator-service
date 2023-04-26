@@ -71,6 +71,10 @@ func (syncer *TicketSyncer) sync(event *models.Event, pvtbcEvent *chainmodels.Ev
 			return
 		}
 
+		if len(pvtbcTickets) == 0 {
+			continue
+		}
+
 		var tickets []*models.Ticket
 		for _, pvtbcTicket := range pvtbcTickets {
 			syncedTicket, err := syncer.syncTicket(event.PubBCAddress, pvtbcTicket)

@@ -307,6 +307,8 @@ github.com/ticken-ts/ticken-pubbc-connector v0.0.44 h1:Goa8gdU3aRoJ7lhstj49ztZSF
 github.com/ticken-ts/ticken-pubbc-connector v0.0.44/go.mod h1:3QARm+lkbMN/mJrdNBDoknNZLaVyEdk3O0DpEAu1hzM=
 github.com/ticken-ts/ticken-pvtbc-connector v0.2.49 h1:LT8uYPknWxuf7fbQnMrmWq6zOKbxF4tJVlxYV0GU290=
 github.com/ticken-ts/ticken-pvtbc-connector v0.2.49/go.mod h1:rK1J3x+qeLeGTzjwqYVqI/9AKL0vseqrlwJNZoZXr3o=
+github.com/ticken-ts/ticken-pvtbc-connector v0.2.50 h1:n1XkVYm9rN4RU59q0d+slsTl94UV8m4x4XW1a8MzyKA=
+github.com/ticken-ts/ticken-pvtbc-connector v0.2.50/go.mod h1:rK1J3x+qeLeGTzjwqYVqI/9AKL0vseqrlwJNZoZXr3o=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tklauser/go-sysconf v0.3.5 h1:uu3Xl4nkLzQfXNsWn15rPc/HQCJKObbt1dKJeWp3vU4=
