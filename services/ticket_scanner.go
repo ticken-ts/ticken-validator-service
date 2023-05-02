@@ -59,11 +59,28 @@ func (scanner *TicketScanner) Scan(eventID, ticketID, validatorID uuid.UUID, rSi
 func (scanner *TicketScanner) validateSignature(publicKey *ecdsa.PublicKey, rSignatureField, sSignatureField string, ticket *models.Ticket) error {
 	ticketFingerprint := ticket.GetTicketFingerprint()
 
-	r, ok := big.NewInt(0).SetString(rSignatureField, 16)
+	//var fingerprintHex = fmt.Sprintf("%x", ticketFingerprint)
+	//println(fingerprintHex)
+
+	//privString := "6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1"
+	//pk, err := crypto.HexToECDSA(privString)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//signatureReal, err := crypto.Sign(ticketFingerprint, pk)
+	//if err != nil {
+	//	panic(err)
+	//}
+
+	//// secp256k1
+	//var signatureHex = fmt.Sprintf("%x", signatureReal)
+	//println(signatureHex)
+
+	r, ok := big.NewInt(0).SetString(rSignatureField, 10)
 	if !ok {
 		return fmt.Errorf("failed to read R signature filed")
 	}
-	s, ok := big.NewInt(0).SetString(sSignatureField, 16)
+	s, ok := big.NewInt(0).SetString(sSignatureField, 10)
 	if !ok {
 		return fmt.Errorf("failed to read S signature filed")
 	}
@@ -71,6 +88,8 @@ func (scanner *TicketScanner) validateSignature(publicKey *ecdsa.PublicKey, rSig
 	signature := make([]byte, 0)
 	signature = append(signature, r.Bytes()...)
 	signature = append(signature, s.Bytes()...)
+
+	//println(fmt.Sprintf("%x", signature))
 
 	pubKey := crypto.CompressPubkey(publicKey)
 
